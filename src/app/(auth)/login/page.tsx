@@ -38,11 +38,13 @@ export default function LoginPage() {
           .eq('id', data.user.id)
           .single();
         
-        if (profile?.role === 'especialista' || profile?.role === 'admin') {
-          router.push("/dashboard");
-        } else {
-          router.push("/dashboard/juegos"); // Ruta default para pacientes
-        }
+        const roleRoutes: Record<string, string> = {
+          paciente:    "/paciente",
+          especialista: "/especialista",
+          tutor:       "/tutor",
+          admin:       "/admin",
+        };
+        router.push(roleRoutes[profile?.role ?? ""] ?? "/login");
       }
     } catch (err: any) {
       setError(err.message === "Invalid login credentials" ? "Correo o contraseña incorrectos" : "Ocurrió un error al iniciar sesión.");
