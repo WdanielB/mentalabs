@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -49,7 +49,7 @@ function parseQuestion(raw: any): Question {
 }
 
 /* ── Main component ──────────────────────────────────────────── */
-export default function ExamenPage() {
+function ExamenContent() {
   const searchParams = useSearchParams();
   const router       = useRouter();
   const attemptId    = searchParams.get("attempt");
@@ -379,5 +379,17 @@ export default function ExamenPage() {
         </div>
       </footer>
     </div>
+  );
+}
+
+export default function ExamenPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-slate-50 dark:bg-[#111822] flex items-center justify-center">
+        <div className="animate-spin h-8 w-8 border-4 border-[#136dec] border-t-transparent rounded-full" />
+      </div>
+    }>
+      <ExamenContent />
+    </Suspense>
   );
 }
