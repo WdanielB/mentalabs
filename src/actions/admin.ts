@@ -129,6 +129,27 @@ export async function reviewAssignmentRequest(
   }
 }
 
+// ── Dashboard Stats ───────────────────────────────────────────────────────────
+
+export async function getAdminStats() {
+  await requireAdmin();
+  const db = createAdminClient();
+  const [pRes, sRes, tRes, eRes, aRes] = await Promise.all([
+    db.from("profiles").select("*", { count: "exact", head: true }).eq("role", "paciente"),
+    db.from("profiles").select("*", { count: "exact", head: true }).eq("role", "especialista"),
+    db.from("profiles").select("*", { count: "exact", head: true }).eq("role", "tutor"),
+    db.from("exams").select("*", { count: "exact", head: true }).eq("is_published", true),
+    db.from("exam_attempts").select("*", { count: "exact", head: true }),
+  ]);
+  return {
+    patients:    pRes.count ?? 0,
+    specialists: sRes.count ?? 0,
+    tutors:      tRes.count ?? 0,
+    exams:       eRes.count ?? 0,
+    attempts:    aRes.count ?? 0,
+  };
+}
+
 // ── Appointment Requests ──────────────────────────────────────────────────────
 
 export async function listScheduledAppointments() {

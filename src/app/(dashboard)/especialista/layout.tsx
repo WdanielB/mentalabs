@@ -66,7 +66,7 @@ export default function EspecialistaLayout({ children }: { children: React.React
             </div>
             <div className="min-w-0">
               <p className="font-semibold text-sm truncate text-slate-900">{profile.full_name}</p>
-              <p className="text-xs text-slate-400 truncate">{profile.email}</p>
+              <p className="text-xs text-slate-500 truncate">{profile.email}</p>
             </div>
           </div>
         ) : (
@@ -99,7 +99,7 @@ export default function EspecialistaLayout({ children }: { children: React.React
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 font-medium text-sm transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-red-500 hover:bg-red-50 font-medium text-sm transition-colors"
         >
           <LogOut className="h-4 w-4" />
           <span>Cerrar Sesión</span>

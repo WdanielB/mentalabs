@@ -14,10 +14,10 @@
 
 @layer base {
   * {
-    @apply border-slate-200 dark:border-slate-800;
+    @apply border-slate-200;
   }
   body {
-    @apply bg-white dark:bg-[#111822] text-slate-900 dark:text-slate-100;
+    @apply bg-white text-slate-900;
     font-family: var(--font-body), system-ui, sans-serif;
   }
   .font-display {
