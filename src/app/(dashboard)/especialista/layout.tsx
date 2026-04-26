@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Brain, Home, Users, Calendar, ClipboardList, BarChart3, LogOut } from "lucide-react";
+import { Brain, Home, Users, Calendar, ClipboardList, BarChart3, Clock, LogOut } from "lucide-react";
 import { createClient } from "../../../../utils/supabase/client";
 
 interface Profile {
@@ -12,11 +12,12 @@ interface Profile {
 }
 
 const navItems = [
-  { icon: Home,      label: "Inicio",            href: "/especialista" },
-  { icon: Users,     label: "Mis Pacientes",      href: "/especialista/pacientes" },
-  { icon: Calendar,  label: "Agenda",             href: "/especialista/agenda" },
-  { icon: ClipboardList, label: "Biblioteca",       href: "/especialista/examenes" },
-  { icon: BarChart3, label: "Reportes",           href: "/especialista/reportes" },
+  { icon: Home,          label: "Inicio",          href: "/especialista" },
+  { icon: Users,         label: "Mis Pacientes",   href: "/especialista/pacientes" },
+  { icon: Calendar,      label: "Agenda",          href: "/especialista/agenda" },
+  { icon: Clock,         label: "Mi Horario",      href: "/especialista/horarios" },
+  { icon: ClipboardList, label: "Biblioteca",      href: "/especialista/examenes" },
+  { icon: BarChart3,     label: "Reportes",        href: "/especialista/reportes" },
 ];
 
 export default function EspecialistaLayout({ children }: { children: React.ReactNode }) {

@@ -29,6 +29,7 @@ export async function createUserProfile(
       specialty:   "Psicología General",
       rating:      0,
       hourly_rate: 0,
+      status:      "pending",
     });
     if (error) throw new Error(error.message);
   }

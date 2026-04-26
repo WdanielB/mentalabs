@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import { createClient } from "../../../../../../../utils/supabase/client";
-import ClinicalHistoryView from "../../../../../../components/ClinicalHistoryView";
+import { createClient } from "../../../../../../../../utils/supabase/client";
+import ClinicalHistoryView from "../../../../../../../components/ClinicalHistoryView";
 
 interface SessionData {
   patientId: string;

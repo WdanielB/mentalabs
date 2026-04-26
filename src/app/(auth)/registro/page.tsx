@@ -5,7 +5,7 @@ import { User, Users, Briefcase, CalendarClock, Lock, AlertCircle } from "lucide
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../../utils/supabase/client";
-import { createUserProfile } from "../../../../actions/auth";
+import { createUserProfile } from "../../../actions/auth";
 
 const roleMap = {
   padre:        { dbRole: "tutor",        route: "/tutor" },
