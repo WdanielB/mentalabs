@@ -117,8 +117,8 @@ export default function TutorHomePage() {
         {loading ? (
           <div className="h-8 w-52 rounded-lg bg-slate-200 dark:bg-slate-700 animate-pulse mb-2" />
         ) : (
-          <h1 className="text-2xl font-black text-slate-900 dark:text-white">
-            Bienvenido, {firstName || "Tutor"} 👋
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">
+            Bienvenido, {firstName || "Tutor"}
           </h1>
         )}
         <p className="text-slate-500 text-sm mt-1">
@@ -187,7 +187,7 @@ export default function TutorHomePage() {
             return (
               <div key={p.id} className="px-6 py-4 flex items-center justify-between gap-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-slate-400 dark:bg-slate-600 flex items-center justify-center text-white font-bold shrink-0">
                     {p.full_name.charAt(0).toUpperCase()}
                   </div>
                   <div className="min-w-0">

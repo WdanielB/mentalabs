@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, ChevronDown, ChevronUp, ClipboardList, BarChart3, Calendar, AlertCircle } from "lucide-react";
+import {
+  Users, ChevronDown, ChevronUp, ClipboardList, BarChart3,
+  AlertCircle, Brain
+} from "lucide-react";
 import { createClient } from "../../../../../utils/supabase/client";
 import { format, differenceInYears } from "date-fns";
 import { es } from "date-fns/locale";
@@ -73,58 +76,59 @@ export default function TutorPacientesPage() {
         .in("patient_id", patientIds)
         .order("assigned_at", { ascending: false });
 
-      const { data: diags } = await supabase
-        .from("diagnostics")
-        .select(`
-          id,
-          generated_subcategory,
-          created_at,
-          exam_attempts!inner(
-            patient_id,
-            total_score,
-            completed_at,
-            exams!inner(title)
-          )
-        `)
-        .in("exam_attempts.patient_id", patientIds)
-        .order("created_at", { ascending: false });
+      // Fix: query attempt IDs first, then fetch diagnostics by attempt_id
+      const attemptIds = exams?.map((e: any) => e.id) ?? [];
 
+      let diags: any[] = [];
+      if (attemptIds.length > 0) {
+        const { data: diagData } = await supabase
+          .from("diagnostics")
+          .select("id, attempt_id, generated_subcategory, created_at")
+          .in("attempt_id", attemptIds)
+          .order("created_at", { ascending: false });
+        diags = diagData ?? [];
+      }
+
+      // Build maps
       const examsByPatient: Record<string, PatientDetail["exams"]> = {};
+      const attemptMap: Record<string, any> = {};
       exams?.forEach((e: any) => {
         if (!examsByPatient[e.patient_id]) examsByPatient[e.patient_id] = [];
         examsByPatient[e.patient_id].push({
-          id: e.id,
-          exam_title: e.exams?.title ?? "Examen",
-          status: e.status,
-          total_score: e.total_score,
-          assigned_at: e.assigned_at,
+          id:           e.id,
+          exam_title:   e.exams?.title ?? "Examen",
+          status:       e.status,
+          total_score:  e.total_score,
+          assigned_at:  e.assigned_at,
           completed_at: e.completed_at,
         });
+        attemptMap[e.id] = e;
       });
 
       const diagsByPatient: Record<string, PatientDetail["results"]> = {};
-      diags?.forEach((d: any) => {
-        const pid = d.exam_attempts?.patient_id;
-        if (!pid) return;
+      diags.forEach((d: any) => {
+        const attempt = attemptMap[d.attempt_id];
+        if (!attempt) return;
+        const pid = attempt.patient_id;
         if (!diagsByPatient[pid]) diagsByPatient[pid] = [];
         diagsByPatient[pid].push({
-          id: d.id,
-          exam_title: d.exam_attempts?.exams?.title ?? "Examen",
-          subcategory: d.generated_subcategory ?? "—",
-          total_score: d.exam_attempts?.total_score ?? null,
-          completed_at: d.exam_attempts?.completed_at ?? d.created_at,
+          id:           d.id,
+          exam_title:   attempt.exams?.title ?? "Examen",
+          subcategory:  d.generated_subcategory ?? "—",
+          total_score:  attempt.total_score ?? null,
+          completed_at: attempt.completed_at ?? d.created_at,
         });
       });
 
       setPatients(
         (pts ?? []).map((p: any) => ({
-          id: p.id,
-          full_name: p.profiles?.full_name ?? "Paciente",
-          email: p.profiles?.email ?? "",
-          birth_date: p.profiles?.birth_date ?? null,
-          status: p.status ?? "active",
-          exams: examsByPatient[p.id] ?? [],
-          results: diagsByPatient[p.id] ?? [],
+          id:          p.id,
+          full_name:   p.profiles?.full_name ?? "Paciente",
+          email:       p.profiles?.email ?? "",
+          birth_date:  p.profiles?.birth_date ?? null,
+          status:      p.status ?? "active",
+          exams:       examsByPatient[p.id] ?? [],
+          results:     diagsByPatient[p.id] ?? [],
         }))
       );
       setLoading(false);
@@ -165,6 +169,7 @@ export default function TutorPacientesPage() {
         <div className="text-center py-20 bg-white dark:bg-[#1a2432] rounded-2xl border border-slate-200 dark:border-slate-800">
           <Users className="h-14 w-14 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
           <p className="font-bold text-slate-700 dark:text-slate-300 text-lg">Sin pacientes vinculados</p>
+          <p className="text-slate-400 text-sm mt-2">Contacta a un especialista para vincular pacientes a tu cuenta.</p>
         </div>
       )}
 
@@ -182,7 +187,7 @@ export default function TutorPacientesPage() {
                 onClick={() => toggle(p.id)}
                 className="w-full flex items-center gap-4 p-5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
               >
-                <div className="h-11 w-11 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold shrink-0">
+                <div className="h-11 w-11 rounded-full bg-slate-400 dark:bg-slate-600 flex items-center justify-center text-white font-bold shrink-0">
                   {p.full_name.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -209,7 +214,7 @@ export default function TutorPacientesPage() {
                   <div className="flex border-b border-slate-100 dark:border-slate-800 px-5">
                     {(["exams", "results"] as const).map((t) => {
                       const labels = { exams: "Exámenes", results: "Diagnósticos" };
-                      const icons = { exams: ClipboardList, results: BarChart3 };
+                      const icons = { exams: ClipboardList, results: Brain };
                       const TabIcon = icons[t];
                       return (
                         <button
@@ -257,13 +262,13 @@ export default function TutorPacientesPage() {
                     {tab === "results" && (
                       <div className="space-y-3">
                         {p.results.length === 0 && (
-                          <p className="text-sm text-slate-500 text-center py-6">Sin diagnósticos generados</p>
+                          <p className="text-sm text-slate-500 text-center py-6">Sin diagnósticos generados aún</p>
                         )}
                         {p.results.map((r) => (
                           <div key={r.id} className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-[#111822] rounded-xl">
                             <div>
                               <p className="font-semibold text-sm">{r.exam_title}</p>
-                              <p className="text-xs text-slate-400">{r.subcategory}</p>
+                              <p className="text-xs text-[#136dec] font-medium mt-0.5">{r.subcategory}</p>
                             </div>
                             <div className="text-right">
                               {r.total_score !== null && (

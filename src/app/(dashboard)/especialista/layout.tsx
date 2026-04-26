@@ -49,30 +49,30 @@ export default function EspecialistaLayout({ children }: { children: React.React
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#111822] text-slate-900 dark:text-slate-100 flex font-sans">
-      <aside className="hidden lg:flex w-64 flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-[#1a2432] p-4 shrink-0 fixed h-full z-10">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
+      <aside className="hidden lg:flex w-64 flex-col border-r border-slate-200 bg-white p-4 shrink-0 fixed h-full z-10">
         <Link href="/especialista" className="flex items-center gap-3 mb-6 px-2 group">
           <div className="h-8 w-8 rounded-lg bg-[#136dec] text-white flex items-center justify-center group-hover:scale-105 transition-transform">
             <Brain className="h-5 w-5" />
           </div>
-          <span className="font-bold text-lg">MentaLabs</span>
+          <span className="font-bold text-lg text-slate-900">MentaLabs</span>
         </Link>
 
         {profile ? (
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-[#111822] mb-6">
-            <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold text-sm shrink-0">
+          <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50 border border-slate-100 mb-6">
+            <div className="h-9 w-9 rounded-full bg-[#136dec] flex items-center justify-center text-white font-bold text-sm shrink-0">
               {profile.full_name?.charAt(0)?.toUpperCase() ?? "E"}
             </div>
             <div className="min-w-0">
-              <p className="font-semibold text-sm truncate">{profile.full_name}</p>
+              <p className="font-semibold text-sm truncate text-slate-900">{profile.full_name}</p>
               <p className="text-xs text-slate-400 truncate">{profile.email}</p>
             </div>
           </div>
         ) : (
-          <div className="h-[60px] mb-6 rounded-xl bg-slate-100 dark:bg-slate-800 animate-pulse" />
+          <div className="h-[60px] mb-6 rounded-lg bg-slate-100 animate-pulse" />
         )}
 
-        <nav className="space-y-1 flex-1">
+        <nav className="space-y-0.5 flex-1">
           {navItems.map(({ icon: Icon, label, href }) => {
             const exact = href === "/especialista";
             const isActive = exact ? pathname === href : pathname.startsWith(href);
@@ -80,16 +80,16 @@ export default function EspecialistaLayout({ children }: { children: React.React
               <Link
                 key={href}
                 href={href}
-                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors ${
+                className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
                   isActive
-                    ? "bg-blue-50 text-[#136dec] dark:bg-[#136dec]/10 font-semibold"
-                    : "text-slate-500 font-medium hover:bg-slate-50 dark:hover:bg-slate-800"
+                    ? "bg-blue-50 text-[#136dec] font-semibold"
+                    : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-700"
                 }`}
               >
                 {isActive && (
-                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#136dec] rounded-r-md" />
+                  <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#136dec] rounded-r" />
                 )}
-                <Icon className="h-5 w-5 shrink-0" />
+                <Icon className="h-4 w-4 shrink-0" />
                 <span>{label}</span>
               </Link>
             );
@@ -98,9 +98,9 @@ export default function EspecialistaLayout({ children }: { children: React.React
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 font-medium text-sm transition-colors"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-400 hover:text-red-500 hover:bg-red-50 font-medium text-sm transition-colors"
         >
-          <LogOut className="h-5 w-5" />
+          <LogOut className="h-4 w-4" />
           <span>Cerrar Sesión</span>
         </button>
       </aside>

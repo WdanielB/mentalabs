@@ -1,11 +1,79 @@
 "use client";
 
 import Link from "next/link";
-import { User, Users, Briefcase, CalendarClock, Lock } from "lucide-react";
+import { User, Users, Briefcase, CalendarClock, Lock, AlertCircle } from "lucide-react";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "../../../../utils/supabase/client";
+import { createUserProfile } from "../../../../actions/auth";
+
+const roleMap = {
+  padre:        { dbRole: "tutor",        route: "/tutor" },
+  paciente:     { dbRole: "paciente",     route: "/paciente" },
+  especialista: { dbRole: "especialista", route: "/especialista" },
+} as const;
 
 export default function RegisterPage() {
   const [role, setRole] = useState<"padre" | "paciente" | "especialista">("padre");
+  const [nombre, setNombre] = useState("");
+  const [apellido, setApellido] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [terms, setTerms] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setSuccessMsg(null);
+
+    if (!terms) {
+      setError("Debes aceptar los Términos de Servicio para continuar.");
+      return;
+    }
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({ email, password });
+
+      if (signUpError) throw signUpError;
+
+      const user = data.user;
+      if (!user) throw new Error("No se pudo crear la cuenta.");
+
+      const { dbRole, route } = roleMap[role];
+
+      await createUserProfile(
+        user.id,
+        email,
+        `${nombre} ${apellido}`.trim(),
+        dbRole
+      );
+
+      if (data.session) {
+        router.push(route);
+      } else {
+        setSuccessMsg("Cuenta creada. Revisa tu correo para confirmar y luego inicia sesión.");
+      }
+    } catch (err: any) {
+      const knownErrors: Record<string, string> = {
+        "User already registered": "Este correo ya está registrado.",
+        "Password should be at least 6 characters.": "La contraseña debe tener al menos 6 caracteres.",
+        "email rate limit exceeded": "Demasiados intentos. Espera unos minutos.",
+      };
+      setError(knownErrors[err.message] ?? `Error: ${err.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-slate-50 dark:bg-[#111822]">
@@ -103,34 +171,45 @@ export default function RegisterPage() {
           </div>
 
           {/* Form Fields */}
-          <form className="space-y-6">
+          <form onSubmit={handleRegister} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl flex items-center gap-3 text-sm font-medium border border-red-100 dark:border-red-900/50">
+                <AlertCircle className="h-5 w-5 shrink-0" />
+                <p>{error}</p>
+              </div>
+            )}
+            {successMsg && (
+              <div className="bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 p-4 rounded-xl flex items-center gap-3 text-sm font-medium border border-green-100 dark:border-green-900/50">
+                <p>{successMsg}</p>
+              </div>
+            )}
             <h3 className="text-lg font-bold text-slate-900 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2">Información Personal</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nombre</label>
-                <input type="text" placeholder="Ej. Juan" className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
+                <input type="text" value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Ej. Juan" required className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Apellido</label>
-                <input type="text" placeholder="Ej. Pérez" className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
+                <input type="text" value={apellido} onChange={(e) => setApellido(e.target.value)} placeholder="Ej. Pérez" required className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
               </div>
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Correo Electrónico</label>
-              <input type="email" placeholder="nombre@ejemplo.com" className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="nombre@ejemplo.com" required className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] p-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contraseña</label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-                <input type="password" placeholder="Mínimo 8 caracteres" className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] py-3 pl-10 pr-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
+                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Mínimo 8 caracteres" required className="w-full rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1a2432] py-3 pl-10 pr-3 text-sm focus:border-[#136dec] focus:ring-[#136dec]" />
               </div>
             </div>
 
             <div className="flex items-start gap-3 pt-4">
-              <input type="checkbox" id="terms" className="mt-1 h-4 w-4 rounded border-slate-300 text-[#136dec] focus:ring-[#136dec]" />
+              <input type="checkbox" id="terms" checked={terms} onChange={(e) => setTerms(e.target.checked)} className="mt-1 h-4 w-4 rounded border-slate-300 text-[#136dec] focus:ring-[#136dec]" />
               <label htmlFor="terms" className="text-sm text-slate-600 dark:text-slate-400">
                 Acepto los <Link href="#" className="font-semibold text-[#136dec]">Términos de Servicio</Link> y la <Link href="#" className="font-semibold text-[#136dec]">Política de Privacidad</Link> de MentaLabs.
               </label>
@@ -140,9 +219,9 @@ export default function RegisterPage() {
                 <Link href="/" className="flex-1 flex justify-center items-center text-center py-3 rounded-lg font-semibold border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
                   Atrás
                 </Link>
-                <Link href="/dashboard" className="flex-[2] flex justify-center items-center py-3 rounded-lg font-semibold bg-[#136dec] text-white hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20">
-                  Crear Cuenta
-                </Link>
+                <button type="submit" disabled={isLoading} className="flex-[2] flex justify-center items-center py-3 rounded-lg font-semibold bg-[#136dec] text-white hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20 disabled:opacity-70 disabled:cursor-not-allowed">
+                  {isLoading ? "Creando cuenta..." : "Crear Cuenta"}
+                </button>
             </div>
             
             <p className="text-center text-sm text-slate-600 dark:text-slate-400 mt-6">

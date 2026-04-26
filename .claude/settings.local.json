@@ -4,7 +4,8 @@
       "Bash(npx tsc *)",
       "Bash(npm install *)",
       "Bash(supabase --version)",
-      "Bash(node *)"
+      "Bash(node *)",
+      "Bash(xargs grep *)"
     ]
   }
 }

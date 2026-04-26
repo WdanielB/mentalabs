@@ -18,5 +18,14 @@
   }
   body {
     @apply bg-white dark:bg-[#111822] text-slate-900 dark:text-slate-100;
+    font-family: var(--font-body), system-ui, sans-serif;
+  }
+  .font-display {
+    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
   }
 }
+
+/* GSAP initial states */
+.gsap-fade-up   { opacity: 0; transform: translateY(40px); }
+.gsap-fade-in   { opacity: 0; }
+.gsap-scale-in  { opacity: 0; transform: scale(0.92); }

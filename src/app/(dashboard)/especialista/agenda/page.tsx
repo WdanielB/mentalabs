@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Video, CheckCircle2, XCircle, AlertCircle, Plus } from "lucide-react";
+import Link from "next/link";
+import { Calendar, Clock, Video, CheckCircle2, XCircle, AlertCircle, Plus, FileText } from "lucide-react";
 import { createClient } from "../../../../../utils/supabase/client";
 import { format, isToday, isTomorrow, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -184,6 +185,14 @@ export default function EspecialistaAgendaPage() {
                         >
                           <Video className="h-3 w-3" /> Unirse
                         </a>
+                      )}
+                      {(appt.status === "confirmed" || appt.status === "completed") && (
+                        <Link
+                          href={`/especialista/pacientes/${appt.patient_id}/sesion/${appt.id}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-xs font-bold transition-colors"
+                        >
+                          <FileText className="h-3 w-3" /> Sesión SS
+                        </Link>
                       )}
                     </div>
                   </div>
