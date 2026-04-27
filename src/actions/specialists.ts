@@ -11,13 +11,14 @@ export interface SpecialistCard {
   bio: string | null;
   rating: number;
   hourly_rate: number;
+  focus_areas: string[];
 }
 
 export async function listSpecialists(opts?: { specialty?: string }) {
   const supabase = createAdminClient();
   let q = supabase
     .from("specialists")
-    .select("id, specialty, bio, rating, hourly_rate, profiles!inner(full_name, email)")
+    .select("id, specialty, bio, rating, hourly_rate, focus_areas, profiles!inner(full_name, email)")
     .order("rating", { ascending: false });
 
   if (opts?.specialty) {
@@ -35,7 +36,20 @@ export async function listSpecialists(opts?: { specialty?: string }) {
     bio:         s.bio ?? null,
     rating:      Number(s.rating) || 0,
     hourly_rate: Number(s.hourly_rate) || 0,
+    focus_areas: s.focus_areas ?? [],
   })) as SpecialistCard[];
+}
+
+export async function updateSpecialistFocusAreas(areas: string[]): Promise<void> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("specialists")
+    .update({ focus_areas: areas })
+    .eq("id", user.id);
+  if (error) throw new Error(error.message);
 }
 
 export async function requestAppointment(specialistId: string, patientId: string, startTime: string) {

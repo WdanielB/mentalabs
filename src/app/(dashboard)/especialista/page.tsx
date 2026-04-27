@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
  Users, ClipboardList, Calendar, ArrowRight,
- CheckCircle2, Clock, AlertCircle, TrendingUp
+ CheckCircle2, Clock, AlertCircle, TrendingUp,
+ Check, Loader2, Moon, Activity, Zap, Brain,
+ BookOpen, Sparkles, Shield, Heart, Flame
 } from "lucide-react";
 import { createClient } from "../../../../utils/supabase/client";
+import { updateSpecialistFocusAreas } from "../../../actions/specialists";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -31,6 +34,24 @@ interface RecentActivity {
  assigned_at: string;
 }
 
+type AreaConfig = {
+  id: string; label: string; Icon: React.ElementType;
+  inactive: string; active: string; iconInactive: string; iconActive: string;
+};
+
+const CONDITION_AREAS: AreaConfig[] = [
+  { id: "Depresión", label: "Depresión", Icon: Moon, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-blue-400 text-blue-700 bg-blue-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-blue-100 text-blue-600" },
+  { id: "Ansiedad", label: "Ansiedad", Icon: Activity, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-violet-400 text-violet-700 bg-violet-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-violet-100 text-violet-600" },
+  { id: "TDAH/TDA", label: "TDAH / TDA", Icon: Zap, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-amber-400 text-amber-700 bg-amber-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-amber-100 text-amber-600" },
+  { id: "Autismo (TEA)", label: "Autismo (TEA)", Icon: Brain, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-emerald-400 text-emerald-700 bg-emerald-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-emerald-100 text-emerald-600" },
+  { id: "Terapia de Parejas", label: "Terapia de Parejas", Icon: Users, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-rose-400 text-rose-700 bg-rose-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-rose-100 text-rose-600" },
+  { id: "Duelo y Pérdida", label: "Duelo y Pérdida", Icon: Heart, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-slate-400 text-slate-700 bg-slate-100", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-slate-200 text-slate-600" },
+  { id: "Estrés / Burnout", label: "Estrés / Burnout", Icon: Flame, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-orange-400 text-orange-700 bg-orange-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-orange-100 text-orange-600" },
+  { id: "Problemas de Conducta", label: "Conducta", Icon: Shield, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-red-400 text-red-700 bg-red-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-red-100 text-red-600" },
+  { id: "Dificultades de Aprendizaje", label: "Aprendizaje", Icon: BookOpen, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-cyan-400 text-cyan-700 bg-cyan-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-cyan-100 text-cyan-600" },
+  { id: "Desarrollo Infantil", label: "Desarrollo Infantil", Icon: Sparkles, inactive: "border-slate-200 text-slate-600 bg-white", active: "border-purple-400 text-purple-700 bg-purple-50", iconInactive: "bg-slate-100 text-slate-400", iconActive: "bg-purple-100 text-purple-600" },
+];
+
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
  active: { label: "Activo", color: "bg-green-100 text-green-700 " },
  inactive: { label: "Inactivo", color: "bg-slate-100 text-slate-500 " },
@@ -49,6 +70,9 @@ export default function EspecialistaHomePage() {
  const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
  const [profileName, setProfileName] = useState("Especialista");
  const [loading, setLoading] = useState(true);
+ const [currentAreas, setCurrentAreas] = useState<string[]>([]);
+ const [savingAreas, setSavingAreas] = useState(false);
+ const [areasSaved, setAreasSaved] = useState(false);
 
  useEffect(() => {
  const load = async () => {
@@ -63,12 +87,23 @@ export default function EspecialistaHomePage() {
  .single();
  if (prof) setProfileName(prof.full_name);
 
+     const { data: specData } = await supabase
+       .from("specialists")
+       .select("focus_areas")
+       .eq("id", user.id)
+       .single();
+     if (specData?.focus_areas) setCurrentAreas(specData.focus_areas);
+
  const today = new Date();
  today.setHours(0, 0, 0, 0);
  const tomorrow = new Date(today);
  tomorrow.setDate(tomorrow.getDate() + 1);
 
- const [pRes, eRes, aRes] = await Promise.all([
+ const [assignRes, pRes, eRes, aRes] = await Promise.all([
+ supabase
+ .from("specialist_patient_assignments")
+ .select("patient_id")
+ .eq("specialist_id", user.id),
  supabase
  .from("appointments")
  .select("patient_id")
@@ -87,14 +122,24 @@ export default function EspecialistaHomePage() {
  .in("status", ["scheduled", "confirmed"]),
  ]);
 
- const uniquePatients = new Set(pRes.data?.map((r: any) => r.patient_id) ?? []);
+ const uniquePatients = new Set([
+ ...(assignRes.data?.map((r: any) => r.patient_id) ?? []),
+ ...(pRes.data?.map((r: any) => r.patient_id) ?? []),
+ ]);
  setStats({
  patients: uniquePatients.size,
  pendingExams: eRes.count ?? 0,
  todayAppointments: aRes.count ?? 0,
  });
 
- // Recent patients via appointments
+ // Recent patients via assignments (fallback to appointments if needed)
+ const { data: recentAssignments } = await supabase
+ .from("specialist_patient_assignments")
+ .select("patient_id, assigned_at")
+ .eq("specialist_id", user.id)
+ .order("assigned_at", { ascending: false })
+ .limit(20);
+
  const { data: appts } = await supabase
  .from("appointments")
  .select("patient_id")
@@ -102,8 +147,13 @@ export default function EspecialistaHomePage() {
  .order("start_time", { ascending: false })
  .limit(20);
 
- if (appts && appts.length > 0) {
- const ids = [...new Set(appts.map((a: any) => a.patient_id))].slice(0, 5);
+ const recentIds = [
+ ...(recentAssignments?.map((a: any) => a.patient_id) ?? []),
+ ...(appts?.map((a: any) => a.patient_id) ?? []),
+ ];
+
+ if (recentIds.length > 0) {
+ const ids = [...new Set(recentIds)].slice(0, 5);
  const { data: pts } = await supabase
  .from("patients")
  .select("id, status, profiles!inner(full_name, email)")
@@ -151,6 +201,18 @@ export default function EspecialistaHomePage() {
  };
  load();
  }, []);
+
+ const handleSaveAreas = async () => {
+   setSavingAreas(true);
+   try {
+     await updateSpecialistFocusAreas(currentAreas);
+     setAreasSaved(true);
+     setTimeout(() => setAreasSaved(false), 2500);
+   } catch (e: any) {
+     console.error(e.message);
+   }
+   setSavingAreas(false);
+ };
 
  const statsCards = [
  { label: "Pacientes Activos", value: stats.patients, icon: Users, color: "from-[#136dec] to-blue-400", bg: "bg-blue-50 ", text: "text-[#136dec]" },
@@ -303,6 +365,48 @@ export default function EspecialistaHomePage() {
  </div>
  <ArrowRight className="h-4 w-4 text-slate-400 group-hover:text-[#136dec] group-hover:translate-x-1 transition-all" />
  </Link>
+ </div>
+
+ {/* Focus Areas */}
+ <div className="mt-6 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+   <div className="px-6 py-4 border-b border-slate-100">
+     <h2 className="font-bold text-base">Mis áreas de enfoque</h2>
+     <p className="text-xs text-slate-500 mt-0.5">Selecciona las condiciones en que te especializas. Aparecerán en tu perfil público del marketplace.</p>
+   </div>
+   <div className="p-6">
+     <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2.5 mb-6">
+       {CONDITION_AREAS.map(({ id, label, Icon, inactive, active, iconInactive, iconActive }) => {
+         const isActive = currentAreas.includes(id);
+         return (
+           <button
+             key={id}
+             onClick={() => setCurrentAreas(prev => isActive ? prev.filter(a => a !== id) : [...prev, id])}
+             className={`flex items-center gap-2.5 p-3 rounded-2xl border-2 text-left transition-all duration-200 ${isActive ? active : inactive}`}
+           >
+             <div className={`h-8 w-8 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isActive ? iconActive : iconInactive}`}>
+               <Icon className="h-4 w-4" />
+             </div>
+             <span className="text-xs font-semibold leading-tight">{label}</span>
+           </button>
+         );
+       })}
+     </div>
+     <div className="flex items-center justify-end gap-3">
+       {areasSaved && (
+         <span className="flex items-center gap-1.5 text-sm text-green-600 font-semibold">
+           <Check className="h-4 w-4" /> Guardado
+         </span>
+       )}
+       <button
+         onClick={handleSaveAreas}
+         disabled={savingAreas}
+         className="flex items-center gap-2 px-5 py-2.5 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-all disabled:opacity-50 shadow-lg shadow-[#136dec]/20"
+       >
+         {savingAreas && <Loader2 className="h-4 w-4 animate-spin" />}
+         Guardar cambios
+       </button>
+     </div>
+   </div>
  </div>
  </div>
  );

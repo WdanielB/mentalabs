@@ -26,27 +26,56 @@ export default function EspecialistaLayout({ children }: { children: React.React
   const [profile, setProfile] = useState<Profile | null>(null);
 
   useEffect(() => {
-    const init = async () => {
-      const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.push("/login"); return; }
+    const supabase = createClient();
+    let mounted = true;
 
-      const { data } = await supabase
+    // Subscribe immediately so no SIGNED_OUT event is ever missed.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT" && mounted) {
+        router.replace("/login");
+      }
+    });
+
+    (async () => {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (!mounted) return;
+
+      // Network/transient error — leave the session check to onAuthStateChange.
+      if (userError) return;
+
+      // No user and no error means the session is genuinely gone.
+      if (!user) { router.replace("/login"); return; }
+
+      const { data, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, email, role")
         .eq("id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (!data || data.role !== "especialista") { router.push("/login"); return; }
+      if (!mounted) return;
+
+      // Transient DB error — keep showing the page, don't kick the user out.
+      if (profileError || !data) return;
+
+      if (data.role !== "especialista") {
+        // Wrong role: redirect without signing out (preserves session for correct route).
+        router.replace("/login");
+        return;
+      }
+
       setProfile(data);
+    })();
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
     };
-    init();
   }, [router]);
 
   const handleLogout = async () => {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.push("/login");
+    router.replace("/login");
   };
 
   return (

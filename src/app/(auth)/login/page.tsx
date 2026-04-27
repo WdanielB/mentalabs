@@ -31,23 +31,64 @@ export default function LoginPage() {
  }
 
  if (data.session) {
- // Obtenemos el perfil para redirigir según el rol
- const { data: profile } = await supabase
+ const roleFromJwt =
+ (data.user.app_metadata?.role as string | undefined) ??
+ (data.user.user_metadata?.role as string | undefined);
+
+ // Fallback to profiles role when JWT metadata does not include it.
+ // Do not hard-fail login if this query errors.
+ let resolvedRole = roleFromJwt;
+ if (!resolvedRole) {
+ const { data: profile, error: profileError } = await supabase
  .from('profiles')
  .select('role')
  .eq('id', data.user.id)
- .single();
- 
+ .maybeSingle();
+
+ if (!profileError) {
+ resolvedRole = profile?.role;
+ }
+ }
+
+ // Secondary fallback: infer role from domain tables.
+ if (!resolvedRole) {
+ const [{ data: specialist }, { data: patient }] = await Promise.all([
+ supabase
+ .from("specialists")
+ .select("id")
+ .eq("id", data.user.id)
+ .maybeSingle(),
+ supabase
+ .from("patients")
+ .select("id")
+ .eq("id", data.user.id)
+ .maybeSingle(),
+ ]);
+
+ if (specialist?.id) {
+ resolvedRole = "especialista";
+ } else if (patient?.id) {
+ resolvedRole = "paciente";
+ }
+ }
+
  const roleRoutes: Record<string, string> = {
  paciente: "/paciente",
  especialista: "/especialista",
  tutor: "/tutor",
  admin: "/admin",
  };
- router.push(roleRoutes[profile?.role ?? ""] ?? "/login");
+
+ const destination = roleRoutes[resolvedRole ?? ""] ?? "/dashboard";
+
+ router.replace(destination);
  }
  } catch (err: any) {
- setError(err.message === "Invalid login credentials" ? "Correo o contraseña incorrectos" : "Ocurrió un error al iniciar sesión.");
+ setError(
+ err.message === "Invalid login credentials"
+ ? "Correo o contraseña incorrectos"
+ : err.message || "Ocurrió un error al iniciar sesión."
+ );
  } finally {
  setIsLoading(false);
  }

@@ -51,13 +51,18 @@ export default function EspecialistaPacientesPage() {
  if (!user) return;
  setUserId(user.id);
 
- const [apptRes, examRes] = await Promise.all([
+ const [assignRes, apptRes, examRes] = await Promise.all([
+ supabase
+ .from("specialist_patient_assignments")
+ .select("patient_id")
+ .eq("specialist_id", user.id),
  supabase.from("appointments").select("patient_id").eq("specialist_id", user.id),
  supabase.from("exam_attempts").select("patient_id").eq("assigned_by", user.id),
  ]);
 
  const ids = [
  ...new Set([
+ ...(assignRes.data?.map((a: any) => a.patient_id) ?? []),
  ...(apptRes.data?.map((a: any) => a.patient_id) ?? []),
  ...(examRes.data?.map((e: any) => e.patient_id) ?? []),
  ]),

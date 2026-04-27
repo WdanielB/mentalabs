@@ -25,13 +25,25 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // Always call getUser() so the middleware can refresh tokens into the response cookies.
+  const { data: { user }, error } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
   const protectedPaths = ['/paciente', '/especialista', '/tutor', '/admin']
   const isProtected = protectedPaths.some(p => pathname === p || pathname.startsWith(p + '/'))
 
   if (isProtected && !user) {
+    // If there are valid session cookies but getUser() failed transiently (network hiccup,
+    // token mid-refresh), let the request through. The client-side guard will revalidate.
+    // Only hard-redirect when there are no session cookies at all.
+    const hasSessionCookies = request.cookies
+      .getAll()
+      .some((c) => c.name.startsWith('sb-'))
+
+    if (hasSessionCookies) {
+      return supabaseResponse
+    }
+
     return NextResponse.redirect(new URL('/login', request.url))
   }
 
