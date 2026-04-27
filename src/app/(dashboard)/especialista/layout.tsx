@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Brain, Home, Users, Calendar, ClipboardList, BarChart3, Clock, LogOut } from "lucide-react";
 import { createClient } from "../../../../utils/supabase/client";
+import { ROLE_ROUTES, resolveUserRole } from "../../../lib/auth/role";
 
 interface Profile {
   full_name: string;
@@ -46,6 +47,15 @@ export default function EspecialistaLayout({ children }: { children: React.React
       // No user and no error means the session is genuinely gone.
       if (!user) { router.replace("/login"); return; }
 
+      const resolvedRole = await resolveUserRole(supabase, user);
+      if (!mounted) return;
+
+      if (resolvedRole && resolvedRole !== "especialista") {
+        const destination = ROLE_ROUTES[resolvedRole] ?? "/dashboard";
+        router.replace(destination);
+        return;
+      }
+
       const { data, error: profileError } = await supabase
         .from("profiles")
         .select("full_name, email, role")
@@ -55,11 +65,18 @@ export default function EspecialistaLayout({ children }: { children: React.React
       if (!mounted) return;
 
       // Transient DB error — keep showing the page, don't kick the user out.
-      if (profileError || !data) return;
+      if (profileError || !data) {
+        setProfile({
+          full_name: (user.user_metadata?.full_name as string | undefined) ?? "Especialista",
+          email: user.email ?? "",
+        });
+        return;
+      }
 
       if (data.role !== "especialista") {
         // Wrong role: redirect without signing out (preserves session for correct route).
-        router.replace("/login");
+        const destination = ROLE_ROUTES[data.role as keyof typeof ROLE_ROUTES] ?? "/dashboard";
+        router.replace(destination);
         return;
       }
 

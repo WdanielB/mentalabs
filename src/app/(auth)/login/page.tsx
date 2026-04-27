@@ -5,6 +5,7 @@ import { Brain, Mail, Lock, AlertCircle, ArrowRight } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../../utils/supabase/client";
+import { ROLE_ROUTES, resolveUserRole } from "../../../lib/auth/role";
 
 export default function LoginPage() {
  const [email, setEmail] = useState("");
@@ -31,55 +32,8 @@ export default function LoginPage() {
  }
 
  if (data.session) {
- const roleFromJwt =
- (data.user.app_metadata?.role as string | undefined) ??
- (data.user.user_metadata?.role as string | undefined);
-
- // Fallback to profiles role when JWT metadata does not include it.
- // Do not hard-fail login if this query errors.
- let resolvedRole = roleFromJwt;
- if (!resolvedRole) {
- const { data: profile, error: profileError } = await supabase
- .from('profiles')
- .select('role')
- .eq('id', data.user.id)
- .maybeSingle();
-
- if (!profileError) {
- resolvedRole = profile?.role;
- }
- }
-
- // Secondary fallback: infer role from domain tables.
- if (!resolvedRole) {
- const [{ data: specialist }, { data: patient }] = await Promise.all([
- supabase
- .from("specialists")
- .select("id")
- .eq("id", data.user.id)
- .maybeSingle(),
- supabase
- .from("patients")
- .select("id")
- .eq("id", data.user.id)
- .maybeSingle(),
- ]);
-
- if (specialist?.id) {
- resolvedRole = "especialista";
- } else if (patient?.id) {
- resolvedRole = "paciente";
- }
- }
-
- const roleRoutes: Record<string, string> = {
- paciente: "/paciente",
- especialista: "/especialista",
- tutor: "/tutor",
- admin: "/admin",
- };
-
- const destination = roleRoutes[resolvedRole ?? ""] ?? "/dashboard";
+ const resolvedRole = await resolveUserRole(supabase, data.user);
+ const destination = resolvedRole ? ROLE_ROUTES[resolvedRole] : "/dashboard";
 
  router.replace(destination);
  }

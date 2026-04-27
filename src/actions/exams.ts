@@ -1,47 +1,73 @@
 "use server";
 
+import { unstable_cache, updateTag } from 'next/cache';
 import { createAdminClient } from "../../utils/supabase/admin";
+import { CACHE_TAGS } from '../lib/cache/tags';
 
 /* ── Exam loading ──────────────────────────────────────────── */
 
+const _cachedListExams = unstable_cache(
+  async (onlyPublished: boolean): Promise<any[]> => {
+    const supabase = createAdminClient();
+    let query = supabase.from("exams").select("id, title, description, is_published, created_at").order("created_at", { ascending: false });
+    if (onlyPublished) query = query.eq("is_published", true);
+    const { data: exams } = await query;
+    if (!exams) return [];
+
+    const ids = exams.map((e: any) => e.id);
+    if (ids.length === 0) return exams.map((e: any) => ({ ...e, question_count: 0 }));
+
+    const { data: qc } = await supabase.from("questions").select("exam_id").in("exam_id", ids);
+    const cMap: Record<string, number> = {};
+    qc?.forEach((q: any) => { cMap[q.exam_id] = (cMap[q.exam_id] ?? 0) + 1; });
+    return exams.map((e: any) => ({ ...e, question_count: cMap[e.id] ?? 0 }));
+  },
+  [CACHE_TAGS.EXAMS],
+  { tags: [CACHE_TAGS.EXAMS], revalidate: 300 }
+);
+
 export async function listExams(opts?: { onlyPublished?: boolean }) {
-  const supabase = createAdminClient();
-  let query = supabase.from("exams").select("id, title, description, is_published, created_at").order("created_at", { ascending: false });
-  if (opts?.onlyPublished) query = query.eq("is_published", true);
-  const { data: exams } = await query;
-  if (!exams) return [];
-
-  const ids = exams.map((e: any) => e.id);
-  if (ids.length === 0) return exams.map((e: any) => ({ ...e, question_count: 0 }));
-
-  const { data: qc } = await supabase.from("questions").select("exam_id").in("exam_id", ids);
-  const cMap: Record<string, number> = {};
-  qc?.forEach((q: any) => { cMap[q.exam_id] = (cMap[q.exam_id] ?? 0) + 1; });
-  return exams.map((e: any) => ({ ...e, question_count: cMap[e.id] ?? 0 }));
+  return _cachedListExams(!!opts?.onlyPublished);
 }
+
+const _cachedListRulesForExam = unstable_cache(
+  async (examId: string): Promise<any[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase.from("diagnostic_rules").select("*").eq("exam_id", examId).order("min_score");
+    return data ?? [];
+  },
+  [CACHE_TAGS.EXAM_RULES],
+  { tags: [CACHE_TAGS.EXAM_RULES], revalidate: 300 }
+);
 
 export async function listRulesForExam(examId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("diagnostic_rules").select("*").eq("exam_id", examId).order("min_score");
-  return data ?? [];
+  return _cachedListRulesForExam(examId);
 }
 
+const _cachedLoadExam = unstable_cache(
+  async (id: string) => {
+    const supabase = createAdminClient();
+    const { data: exam, error } = await supabase
+      .from("exams")
+      .select("title, description, is_published")
+      .eq("id", id)
+      .single();
+    if (error || !exam) return null;
+
+    const { data: questions } = await supabase
+      .from("questions")
+      .select("id, order_index, content, options")
+      .eq("exam_id", id)
+      .order("order_index");
+
+    return { exam, questions: questions ?? [] };
+  },
+  [CACHE_TAGS.EXAMS],
+  { tags: [CACHE_TAGS.EXAMS], revalidate: 300 }
+);
+
 export async function loadExam(id: string) {
-  const supabase = createAdminClient();
-  const { data: exam, error } = await supabase
-    .from("exams")
-    .select("title, description, is_published")
-    .eq("id", id)
-    .single();
-  if (error || !exam) return null;
-
-  const { data: questions } = await supabase
-    .from("questions")
-    .select("id, order_index, content, options")
-    .eq("exam_id", id)
-    .order("order_index");
-
-  return { exam, questions: questions ?? [] };
+  return _cachedLoadExam(id);
 }
 
 /* ── Exam CRUD ─────────────────────────────────────────────── */
@@ -54,6 +80,7 @@ export async function createExam(title: string, descriptionJson: string): Promis
     .select("id")
     .single();
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAMS);
   return data.id as string;
 }
 
@@ -64,6 +91,7 @@ export async function updateExamMeta(id: string, title: string, descriptionJson:
     .update({ title, description: descriptionJson })
     .eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAMS);
 }
 
 export async function deleteExam(id: string): Promise<void> {
@@ -77,12 +105,17 @@ export async function deleteExam(id: string): Promise<void> {
   await supabase.from("questions").delete().eq("exam_id", id);
   const { error } = await supabase.from("exams").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAMS);
+  updateTag(CACHE_TAGS.EXAM_RULES);
+  updateTag(CACHE_TAGS.ADMIN_STATS);
 }
 
 export async function togglePublishExam(id: string, is_published: boolean): Promise<void> {
   const supabase = createAdminClient();
   const { error } = await supabase.from("exams").update({ is_published }).eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAMS);
+  updateTag(CACHE_TAGS.ADMIN_STATS);
 }
 
 /* ── Exam content (title + description + questions) ─────────── */
@@ -96,7 +129,7 @@ interface QuestionPayload {
 }
 
 interface SaveResult {
-  newIds: Record<number, string>; // index → new question id
+  newIds: Record<number, string>;
 }
 
 export async function saveExamContent(
@@ -142,6 +175,7 @@ export async function saveExamContent(
     }
   }
 
+  updateTag(CACHE_TAGS.EXAMS);
   return { newIds };
 }
 
@@ -159,6 +193,7 @@ export async function createRule(examId: string, rule: {
     .select()
     .single();
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAM_RULES);
   return data;
 }
 
@@ -170,10 +205,12 @@ export async function updateRule(id: string, rule: {
   const supabase = createAdminClient();
   const { error } = await supabase.from("diagnostic_rules").update(rule).eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAM_RULES);
 }
 
 export async function deleteRule(id: string) {
   const supabase = createAdminClient();
   const { error } = await supabase.from("diagnostic_rules").delete().eq("id", id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.EXAM_RULES);
 }

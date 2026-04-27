@@ -1,0 +1,16 @@
+export const CACHE_TAGS = {
+  ADMIN_STATS:          'admin-stats',
+  ADMIN_SPECIALISTS:    'admin-specialists',
+  ADMIN_PATIENTS:       'admin-patients',
+  ADMIN_ASSIGNMENTS:    'admin-assignments',
+  ADMIN_REQUESTS:       'admin-requests',
+  ADMIN_APPOINTMENTS:   'admin-appointments',
+  EXAMS:                'exams',
+  EXAM_RULES:           'exam-rules',
+  INTERVENTION_CODES:   'intervention-codes',
+  DIAGNOSIS_CATEGORIES: 'diagnosis-categories',
+  SPECIALIST_PATIENTS:  'specialist-patients',
+  PATIENT_TIMELINE:     'patient-timeline',
+  PATIENT_EXAMS:        'patient-exams',
+  PATIENT_SESSIONS:     'patient-sessions',
+} as const;

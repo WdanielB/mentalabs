@@ -12,6 +12,8 @@ interface SessionData {
  patientBirthDate: string | null;
  specialistId: string;
  specialistName: string;
+ patientDni: string | null;
+ attentionType: string | null;
 }
 
 export default function EspecialistaSesionPage() {
@@ -32,17 +34,22 @@ export default function EspecialistaSesionPage() {
  const [specRes, patRes] = await Promise.all([
  supabase.from("profiles").select("full_name").eq("id", user.id).single(),
  supabase.from("patients")
- .select("id, profiles!inner(full_name, birth_date)")
+ .select("id, profiles!inner(full_name, birth_date, dni), appointments!inner(attention_type)")
  .eq("id", patientId)
  .single(),
  ]);
 
+ const patientProfile = (patRes.data as any)?.profiles;
+ const appointment = (patRes.data as any)?.appointments;
+
  setData({
  patientId,
- patientName: (patRes.data as any)?.profiles?.full_name ?? "Paciente",
- patientBirthDate: (patRes.data as any)?.profiles?.birth_date ?? null,
+ patientName: patientProfile?.full_name ?? "Paciente",
+ patientBirthDate: patientProfile?.birth_date ?? null,
  specialistId: user.id,
  specialistName: specRes.data?.full_name ?? "Especialista",
+ patientDni: patientProfile?.dni ?? null,
+ attentionType: appointment?.attention_type ?? null,
  });
  setLoading(false);
  };
@@ -87,7 +94,8 @@ export default function EspecialistaSesionPage() {
  patientName={data.patientName}
  patientBirthDate={data.patientBirthDate}
  specialistId={data.specialistId}
- specialistName={data.specialistName}
+ patientDni={data.patientDni}
+ attentionType={data.attentionType}
  />
  </div>
  </div>

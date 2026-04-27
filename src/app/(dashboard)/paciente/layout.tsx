@@ -8,6 +8,7 @@ import {
  Calendar, BookOpen, LogOut, Menu, X,
 } from "lucide-react";
 import { createClient } from "../../../../utils/supabase/client";
+import { ROLE_ROUTES, resolveUserRole } from "../../../lib/auth/role";
 
 interface Profile {
  full_name: string;
@@ -46,6 +47,15 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
  if (userError) return;
  if (!user) { router.replace("/login"); return; }
 
+ const resolvedRole = await resolveUserRole(supabase, user);
+ if (!mounted) return;
+
+ if (resolvedRole && resolvedRole !== "paciente") {
+ const destination = ROLE_ROUTES[resolvedRole] ?? "/dashboard";
+ router.replace(destination);
+ return;
+ }
+
  const { data, error: profileError } = await supabase
  .from("profiles")
  .select("full_name, email, role")
@@ -53,10 +63,17 @@ export default function PacienteLayout({ children }: { children: React.ReactNode
  .maybeSingle();
 
  if (!mounted) return;
- if (profileError || !data) return;
+ if (profileError || !data) {
+ setProfile({
+ full_name: (user.user_metadata?.full_name as string | undefined) ?? "Paciente",
+ email: user.email ?? "",
+ });
+ return;
+ }
 
  if (data.role !== "paciente") {
- router.replace("/login");
+ const destination = ROLE_ROUTES[data.role as keyof typeof ROLE_ROUTES] ?? "/dashboard";
+ router.replace(destination);
  return;
  }
 

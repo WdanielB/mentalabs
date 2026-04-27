@@ -3,13 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../utils/supabase/client";
-
-const ROLE_ROUTES: Record<string, string> = {
-  paciente: "/paciente",
-  especialista: "/especialista",
-  tutor: "/tutor",
-  admin: "/admin",
-};
+import { ROLE_ROUTES, resolveUserRole } from "../../lib/auth/role";
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -24,13 +18,8 @@ export default function DashboardPage() {
         return;
       }
 
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("role")
-        .eq("id", user.id)
-        .maybeSingle();
-
-      const destination = ROLE_ROUTES[profile?.role ?? ""] ?? "/login";
+      const role = await resolveUserRole(supabase, user);
+      const destination = role ? ROLE_ROUTES[role] : "/dashboard";
       router.replace(destination);
     };
 

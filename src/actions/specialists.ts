@@ -1,7 +1,9 @@
 "use server";
 
+import { unstable_cache, updateTag } from 'next/cache';
 import { createAdminClient } from "../../utils/supabase/admin";
 import { createClient } from "../../utils/supabase/server";
+import { CACHE_TAGS } from '../lib/cache/tags';
 
 export interface SpecialistCard {
   id: string;
@@ -50,12 +52,13 @@ export async function updateSpecialistFocusAreas(areas: string[]): Promise<void>
     .update({ focus_areas: areas })
     .eq("id", user.id);
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.ADMIN_SPECIALISTS);
 }
 
 export async function requestAppointment(specialistId: string, patientId: string, startTime: string) {
   const supabase = createAdminClient();
   const start = new Date(startTime);
-  const end   = new Date(start.getTime() + 60 * 60 * 1000); // 1h
+  const end   = new Date(start.getTime() + 60 * 60 * 1000);
 
   const { data, error } = await supabase
     .from("appointments")
@@ -70,6 +73,9 @@ export async function requestAppointment(specialistId: string, patientId: string
     .single();
 
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.PATIENT_TIMELINE);
+  updateTag(CACHE_TAGS.SPECIALIST_PATIENTS);
+  updateTag(CACHE_TAGS.ADMIN_APPOINTMENTS);
   return data.id as string;
 }
 
@@ -109,6 +115,8 @@ export interface AppointmentTimeline {
   start_time: string;
   status: string;
   record_status: "draft" | "signed_and_locked" | null;
+  consultation_reason: string | null;
+  diagnostic_codes: string[];
 }
 
 export interface PatientExamSummary {
@@ -119,29 +127,53 @@ export interface PatientExamSummary {
   subcategory: string | null;
 }
 
+export interface InteractiveSessionSummary {
+  id: string;
+  game_type: string;
+  session_start: string;
+  session_end: string | null;
+  metrics: Record<string, unknown>;
+}
+
 // ── Fetch intervention codes catalog ─────────────────────────────────────
 
+const _listInterventionCodes = unstable_cache(
+  async (): Promise<InterventionCode[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("psychological_intervention_codes")
+      .select("id, code, name, category")
+      .order("category")
+      .order("code");
+    return (data ?? []) as InterventionCode[];
+  },
+  [CACHE_TAGS.INTERVENTION_CODES],
+  { tags: [CACHE_TAGS.INTERVENTION_CODES], revalidate: 86400 }
+);
+
 export async function listInterventionCodes(): Promise<InterventionCode[]> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("psychological_intervention_codes")
-    .select("id, code, name, category")
-    .order("category")
-    .order("code");
-  return (data ?? []) as InterventionCode[];
+  return _listInterventionCodes();
 }
 
 // ── Fetch diagnosis categories ────────────────────────────────────────────
 
+const _listDiagnosisCategories = unstable_cache(
+  async (): Promise<DiagnosisCategory[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("diagnosis_categories")
+      .select("id, condition, type_label, age_group, cie_code, dsm_code")
+      .order("condition")
+      .order("type_label")
+      .order("age_group");
+    return (data ?? []) as DiagnosisCategory[];
+  },
+  [CACHE_TAGS.DIAGNOSIS_CATEGORIES],
+  { tags: [CACHE_TAGS.DIAGNOSIS_CATEGORIES], revalidate: 86400 }
+);
+
 export async function listDiagnosisCategories(): Promise<DiagnosisCategory[]> {
-  const supabase = createAdminClient();
-  const { data } = await supabase
-    .from("diagnosis_categories")
-    .select("id, condition, type_label, age_group, cie_code, dsm_code")
-    .order("condition")
-    .order("type_label")
-    .order("age_group");
-  return (data ?? []) as DiagnosisCategory[];
+  return _listDiagnosisCategories();
 }
 
 // ── Load or initialise a clinical record for an appointment ──────────────
@@ -151,14 +183,6 @@ export async function loadClinicalRecord(appointmentId: string): Promise<Clinica
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
 
-  // Fetch appointment to get consultation_reason (meeting_link as placeholder)
-  const { data: appt } = await supabase
-    .from("appointments")
-    .select("id, patient_id, status")
-    .eq("id", appointmentId)
-    .single();
-
-  // Try loading existing record
   const { data: record } = await supabase
     .from("clinical_records")
     .select("id, status, consultation_reason, clinical_evolution, diagnostic_codes, treatment_plan, intervention_codes, observations, signed_at")
@@ -180,7 +204,6 @@ export async function loadClinicalRecord(appointmentId: string): Promise<Clinica
     };
   }
 
-  // Return a blank draft
   return {
     id:                    null,
     status:                "draft",
@@ -226,6 +249,7 @@ export async function saveClinicalRecordDraft(
     .single();
 
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.PATIENT_TIMELINE);
   return data.id as string;
 }
 
@@ -239,59 +263,106 @@ export async function signClinicalRecord(appointmentId: string): Promise<void> {
     .eq("appointment_id", appointmentId)
     .eq("status", "draft");
   if (error) throw new Error(error.message);
+  updateTag(CACHE_TAGS.PATIENT_TIMELINE);
 }
 
-// ── Patient timeline (past appointments with record status) ───────────────
+// ── Patient timeline ──────────────────────────────────────────────────────
+
+const _cachedPatientTimeline = unstable_cache(
+  async (patientId: string, specialistId: string): Promise<AppointmentTimeline[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("appointments")
+      .select(`id, start_time, status, clinical_records(status, consultation_reason, diagnostic_codes)`)
+      .eq("patient_id", patientId)
+      .eq("specialist_id", specialistId)
+      .order("start_time", { ascending: false })
+      .limit(20);
+
+    return (data ?? []).map((a: any) => ({
+      id:                  a.id,
+      start_time:          a.start_time,
+      status:              a.status,
+      record_status:       a.clinical_records?.[0]?.status ?? null,
+      consultation_reason: a.clinical_records?.[0]?.consultation_reason ?? null,
+      diagnostic_codes:    a.clinical_records?.[0]?.diagnostic_codes ?? [],
+    }));
+  },
+  [CACHE_TAGS.PATIENT_TIMELINE],
+  { tags: [CACHE_TAGS.PATIENT_TIMELINE], revalidate: 60 }
+);
 
 export async function loadPatientTimeline(
   patientId: string,
   specialistId: string
 ): Promise<AppointmentTimeline[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("appointments")
-    .select(`
-      id,
-      start_time,
-      status,
-      clinical_records(status)
-    `)
-    .eq("patient_id", patientId)
-    .eq("specialist_id", specialistId)
-    .order("start_time", { ascending: false })
-    .limit(20);
-
-  return (data ?? []).map((a: any) => ({
-    id:            a.id,
-    start_time:    a.start_time,
-    status:        a.status,
-    record_status: a.clinical_records?.[0]?.status ?? null,
-  }));
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  return _cachedPatientTimeline(patientId, specialistId);
 }
 
-// ── Patient exam summaries for the diagnostic support panel ──────────────
+// ── Patient exam summaries ────────────────────────────────────────────────
+
+const _cachedExamSummaries = unstable_cache(
+  async (patientId: string): Promise<PatientExamSummary[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("exam_attempts")
+      .select(`id, total_score, completed_at, exams!inner(title), diagnostics(generated_subcategory)`)
+      .eq("patient_id", patientId)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(10);
+
+    return (data ?? []).map((a: any) => ({
+      id:           a.id,
+      exam_title:   a.exams?.title ?? "Examen",
+      total_score:  a.total_score ?? null,
+      completed_at: a.completed_at ?? null,
+      subcategory:  a.diagnostics?.[0]?.generated_subcategory ?? null,
+    }));
+  },
+  [CACHE_TAGS.PATIENT_EXAMS],
+  { tags: [CACHE_TAGS.PATIENT_EXAMS], revalidate: 60 }
+);
 
 export async function loadPatientExamSummaries(patientId: string): Promise<PatientExamSummary[]> {
   const supabase = await createClient();
-  const { data } = await supabase
-    .from("exam_attempts")
-    .select(`
-      id,
-      total_score,
-      completed_at,
-      exams!inner(title),
-      diagnostics(generated_subcategory)
-    `)
-    .eq("patient_id", patientId)
-    .eq("status", "completed")
-    .order("completed_at", { ascending: false })
-    .limit(10);
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  return _cachedExamSummaries(patientId);
+}
 
-  return (data ?? []).map((a: any) => ({
-    id:           a.id,
-    exam_title:   a.exams?.title ?? "Examen",
-    total_score:  a.total_score ?? null,
-    completed_at: a.completed_at ?? null,
-    subcategory:  a.diagnostics?.[0]?.generated_subcategory ?? null,
-  }));
+// ── Interactive session summaries ─────────────────────────────────────────
+
+const _cachedSessionSummaries = unstable_cache(
+  async (patientId: string): Promise<InteractiveSessionSummary[]> => {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("interactive_sessions")
+      .select("id, game_type, session_start, session_end, metrics")
+      .eq("patient_id", patientId)
+      .order("session_start", { ascending: false })
+      .limit(10);
+
+    return (data ?? []).map((row: any) => ({
+      id:            row.id,
+      game_type:     row.game_type,
+      session_start: row.session_start,
+      session_end:   row.session_end ?? null,
+      metrics:       row.metrics ?? {},
+    }));
+  },
+  [CACHE_TAGS.PATIENT_SESSIONS],
+  { tags: [CACHE_TAGS.PATIENT_SESSIONS], revalidate: 60 }
+);
+
+export async function loadInteractiveSessionSummaries(
+  patientId: string
+): Promise<InteractiveSessionSummary[]> {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Not authenticated");
+  return _cachedSessionSummaries(patientId);
 }

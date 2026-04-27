@@ -36,28 +36,28 @@ BEGIN
       v_paciente_id, '00000000-0000-0000-0000-000000000000',
       'paciente.test@mentalabs.com',
       crypt('Mentalabs123!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), '{"provider":"email","providers":["email"],"role":"paciente"}', '{}',
       NOW(), NOW(), 'authenticated', 'authenticated'
     ),
     (
       v_especialista_id, '00000000-0000-0000-0000-000000000000',
       'especialista.test@mentalabs.com',
       crypt('Mentalabs123!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), '{"provider":"email","providers":["email"],"role":"especialista"}', '{}',
       NOW(), NOW(), 'authenticated', 'authenticated'
     ),
     (
       v_tutor_id, '00000000-0000-0000-0000-000000000000',
       'tutor.test@mentalabs.com',
       crypt('Mentalabs123!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), '{"provider":"email","providers":["email"],"role":"tutor"}', '{}',
       NOW(), NOW(), 'authenticated', 'authenticated'
     ),
     (
       v_admin_id, '00000000-0000-0000-0000-000000000000',
       'admin.test@mentalabs.com',
       crypt('Mentalabs123!', gen_salt('bf')),
-      NOW(), '{"provider":"email","providers":["email"]}', '{}',
+      NOW(), '{"provider":"email","providers":["email"],"role":"admin"}', '{}',
       NOW(), NOW(), 'authenticated', 'authenticated'
     );
 
