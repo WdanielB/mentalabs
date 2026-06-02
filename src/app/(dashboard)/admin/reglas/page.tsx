@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState } from "react";
 import {
@@ -194,7 +194,7 @@ export default function ReglasPage() {
  const globalMax = rules.length ? Math.max(...rules.map(r => r.max_score)) : 100;
 
  return (
- <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
+ <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
  <AdminSidebar />
 
  <main className="flex-1 lg:ml-64 flex flex-col lg:flex-row h-screen overflow-hidden">

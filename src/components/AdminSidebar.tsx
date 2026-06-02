@@ -8,14 +8,24 @@ import {
 } from "lucide-react";
 import { createClient } from "../../utils/supabase/client";
 
-const NAV = [
-  { icon: Activity,      label: "Resumen",             href: "/admin" },
-  { icon: Stethoscope,   label: "Psicólogos",          href: "/admin/psicologos" },
-  { icon: Users,         label: "Pacientes",           href: "/admin/pacientes" },
-  { icon: UserPlus,      label: "Asignaciones",        href: "/admin/asignaciones" },
-  { icon: CalendarCheck, label: "Solicitudes",         href: "/admin/solicitudes" },
-  { icon: FileText,      label: "Banco de Pruebas",    href: "/admin/banco-pruebas" },
-  { icon: ShieldCheck,   label: "Reglas Diagnósticas", href: "/admin/reglas" },
+const NAV_SECTIONS = [
+  {
+    label: "Gestion",
+    items: [
+      { icon: Activity,      label: "Resumen",       href: "/admin" },
+      { icon: Stethoscope,   label: "Psicologos",    href: "/admin/psicologos" },
+      { icon: Users,         label: "Pacientes",     href: "/admin/pacientes" },
+      { icon: UserPlus,      label: "Asignaciones",  href: "/admin/asignaciones" },
+      { icon: CalendarCheck, label: "Solicitudes",   href: "/admin/solicitudes" },
+    ],
+  },
+  {
+    label: "Configuracion",
+    items: [
+      { icon: FileText,    label: "Banco de Pruebas",    href: "/admin/banco-pruebas" },
+      { icon: ShieldCheck, label: "Reglas Diagnosticas", href: "/admin/reglas" },
+    ],
+  },
 ];
 
 export default function AdminSidebar() {
@@ -29,45 +39,57 @@ export default function AdminSidebar() {
   };
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col border-r border-slate-200 bg-white p-4 shrink-0 fixed h-full z-10">
-      <Link href="/admin" className="flex items-center gap-3 mb-8 px-2 group">
-        <div className="h-8 w-8 rounded-lg bg-[#136dec] text-white flex items-center justify-center group-hover:scale-105 transition-transform">
-          <Brain className="h-5 w-5" />
+    <aside className="hidden lg:flex w-64 flex-col border-r border-[#d9d9d9] bg-white shrink-0 fixed h-full z-10">
+      {/* Product header */}
+      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#d9d9d9] bg-[#f2f4f7] shrink-0">
+        <div className="h-7 w-7 bg-[#0070f2] flex items-center justify-center shrink-0">
+          <Brain className="h-4 w-4 text-white" />
         </div>
-        <span className="font-bold text-lg text-slate-900">Admin</span>
-      </Link>
+        <div>
+          <p className="font-bold text-sm text-[#1d2d3e] leading-tight">MentaLabs</p>
+          <p className="text-[10px] text-[#6a6a6a] leading-tight mt-0.5">Administracion del Sistema</p>
+        </div>
+      </div>
 
-      <nav className="space-y-0.5 flex-1">
-        {NAV.map(({ icon: Icon, label, href }) => {
-          const exact  = href === "/admin";
-          const active = exact ? pathname === href : pathname.startsWith(href);
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={`relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                active
-                  ? "bg-blue-50 text-[#136dec] font-semibold"
-                  : "text-slate-500 font-medium hover:bg-slate-50 hover:text-slate-700"
-              }`}
-            >
-              {active && (
-                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-[#136dec] rounded-r" />
-              )}
-              <Icon className="h-4 w-4 shrink-0" />
-              <span>{label}</span>
-            </Link>
-          );
-        })}
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-2">
+        {NAV_SECTIONS.map((section) => (
+          <div key={section.label} className="mb-2">
+            <p className="px-4 pt-3 pb-1.5 text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider">
+              {section.label}
+            </p>
+            {section.items.map(({ icon: Icon, label, href }) => {
+              const exact  = href === "/admin";
+              const active = exact ? pathname === href : pathname.startsWith(href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`flex items-center gap-3 px-4 py-2.5 text-sm border-l-[3px] transition-colors ${
+                    active
+                      ? "border-[#0070f2] bg-[#eaf1fb] text-[#0070f2] font-semibold"
+                      : "border-transparent text-[#1d2d3e] hover:bg-[#f5f5f5] font-medium"
+                  }`}
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      <button
-        onClick={handleLogout}
-        className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-slate-500 hover:text-red-500 hover:bg-red-50 font-medium text-sm transition-colors"
-      >
-        <LogOut className="h-4 w-4" />
-        <span>Cerrar Sesión</span>
-      </button>
+      {/* Footer */}
+      <div className="border-t border-[#d9d9d9] p-3 shrink-0">
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-[#6a6a6a] hover:text-[#bb0000] hover:bg-[#fff0f0] transition-colors rounded"
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          Cerrar Sesion
+        </button>
+      </div>
     </aside>
   );
 }

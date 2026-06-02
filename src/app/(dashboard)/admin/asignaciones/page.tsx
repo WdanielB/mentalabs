@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, useTransition } from "react";
 import { UserPlus, X, Plus, AlertCircle } from "lucide-react";
@@ -79,7 +79,7 @@ export default function AdminAsignacionesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans">
+    <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
       <AdminSidebar />
       <main className="flex-1 lg:ml-64 p-6 lg:p-8">
         <div className="mb-8">
