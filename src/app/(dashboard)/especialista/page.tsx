@@ -12,6 +12,7 @@ import { updateSpecialistFocusAreas } from "../../../actions/specialists";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
+import { firstName } from "../../../lib/format";
 interface Stats {
   patients: number;
   pendingExams: number;
@@ -40,18 +41,22 @@ const FOCUS_AREAS = [
 ];
 
 const STATUS_LABELS: Record<string, { label: string; dot: string; text: string }> = {
-  active:       { label: "Activo",         dot: "bg-[#107e3e]", text: "text-[#107e3e]" },
-  inactive:     { label: "Inactivo",       dot: "bg-[#6a6a6a]", text: "text-[#6a6a6a]" },
-  in_treatment: { label: "En tratamiento", dot: "bg-[#0070f2]", text: "text-[#0070f2]" },
+  active:       { label: "Activo",         dot: "bg-ok", text: "text-ok" },
+  inactive:     { label: "Inactivo",       dot: "bg-muted", text: "text-muted" },
+  in_treatment: { label: "En tratamiento", dot: "bg-brand", text: "text-brand" },
 };
 
 const EXAM_STATUS: Record<string, { label: string; icon: React.ElementType; color: string; bg: string }> = {
-  pending:     { label: "Pendiente",   icon: Clock,        color: "text-[#e9730c]", bg: "bg-[#fff8f1]" },
-  in_progress: { label: "En progreso", icon: AlertCircle,  color: "text-[#0070f2]", bg: "bg-[#eaf1fb]" },
-  completed:   { label: "Completado",  icon: CheckCircle2, color: "text-[#107e3e]", bg: "bg-[#f1fdf6]" },
+  pending:     { label: "Pendiente",   icon: Clock,        color: "text-warn", bg: "bg-warn-soft" },
+  in_progress: { label: "En progreso", icon: AlertCircle,  color: "text-brand", bg: "bg-brand-soft" },
+  completed:   { label: "Completado",  icon: CheckCircle2, color: "text-ok", bg: "bg-ok-soft" },
 };
 
 export default function EspecialistaHomePage() {
+  // La página se prerenderiza en el build: la fecha de hoy se calcula en el navegador
+  // para no mostrar la del día del build (y evitar el error de hidratación #418).
+  const [todayLabel, setTodayLabel] = useState("");
+  useEffect(() => { setTodayLabel(format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })); }, []);
   const [stats, setStats] = useState<Stats>({ patients: 0, pendingExams: 0, todayAppointments: 0 });
   const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([]);
   const [recentActivity, setRecentActivity] = useState<RecentActivity[]>([]);
@@ -156,45 +161,45 @@ export default function EspecialistaHomePage() {
   return (
     <div>
       {/* Toolbar */}
-      <div className="bg-white border-b border-[#d9d9d9] px-6 py-3">
-        <div className="flex items-center gap-1.5 text-xs text-[#6a6a6a] mb-0.5">
+      <div className="bg-surface border-b border-line px-6 py-3">
+        <div className="flex items-center gap-1.5 text-xs text-muted mb-0.5">
           <span>MentaLabs</span>
           <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-[#1d2d3e]">Inicio</span>
+          <span className="font-medium text-ink">Inicio</span>
         </div>
         {loading ? (
-          <div className="h-5 w-52 bg-[#f2f4f7] animate-pulse" />
+          <div className="h-5 w-52 bg-band animate-pulse" />
         ) : (
-          <h1 className="text-base font-bold text-[#1d2d3e]">
-            Panel de {profileName.split(" ")[0]}
+          <h1 className="text-base font-bold text-ink">
+            Hola, {firstName(profileName)}
           </h1>
         )}
-        <p className="text-xs text-[#6a6a6a] mt-0.5">
-          {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
+        <p className="text-xs text-muted mt-0.5">
+          {todayLabel}
         </p>
       </div>
 
       <div className="p-6 space-y-6">
         {/* KPI Tiles */}
         <section>
-          <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider mb-2">Resumen del Dia</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-[#d9d9d9] border border-[#d9d9d9]">
+          <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Resumen del Dia</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-px bg-line border border-line">
             {[
               { label: "Pacientes Activos",   value: stats.patients,          icon: Users },
               { label: "Examenes Pendientes", value: stats.pendingExams,      icon: ClipboardList },
               { label: "Citas Hoy",           value: stats.todayAppointments, icon: Calendar },
             ].map(({ label, value, icon: Icon }) => (
-              <div key={label} className="bg-white px-5 py-4 flex items-center gap-4">
-                <div className="h-10 w-10 bg-[#eaf1fb] flex items-center justify-center shrink-0">
-                  <Icon className="h-5 w-5 text-[#0070f2]" />
+              <div key={label} className="bg-surface px-5 py-4 flex items-center gap-4">
+                <div className="h-10 w-10 bg-brand-soft flex items-center justify-center shrink-0">
+                  <Icon className="h-5 w-5 text-brand" />
                 </div>
                 <div>
                   {loading ? (
-                    <div className="h-8 w-12 bg-[#f2f4f7] animate-pulse mb-1" />
+                    <div className="h-8 w-12 bg-band animate-pulse mb-1" />
                   ) : (
-                    <p className="text-3xl font-bold text-[#1d2d3e]">{value}</p>
+                    <p className="text-3xl font-bold text-ink">{value}</p>
                   )}
-                  <p className="text-xs text-[#6a6a6a] font-medium">{label}</p>
+                  <p className="text-xs text-muted font-medium">{label}</p>
                 </div>
               </div>
             ))}
@@ -206,25 +211,25 @@ export default function EspecialistaHomePage() {
           {/* Recent Patients */}
           <section className="lg:col-span-3">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider">Pacientes Recientes</p>
-              <Link href="/especialista/pacientes" className="text-[11px] font-semibold text-[#0070f2] flex items-center gap-1 hover:underline">
+              <p className="text-[11px] font-bold text-muted uppercase tracking-wider">Pacientes Recientes</p>
+              <Link href="/especialista/pacientes" className="text-[11px] font-semibold text-brand flex items-center gap-1 hover:underline">
                 Ver todos <ChevronRight className="h-3 w-3" />
               </Link>
             </div>
-            <div className="border border-[#d9d9d9] bg-white">
+            <div className="border border-line bg-surface">
               {loading && Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="px-5 py-3.5 flex items-center gap-3 border-b border-[#e8e8e8] last:border-0">
-                  <div className="h-8 w-8 bg-[#f2f4f7] animate-pulse shrink-0" />
+                <div key={i} className="px-5 py-3.5 flex items-center gap-3 border-b border-line-soft last:border-0">
+                  <div className="h-8 w-8 bg-band animate-pulse shrink-0" />
                   <div className="flex-1 space-y-1.5">
-                    <div className="h-3.5 w-36 bg-[#f2f4f7] animate-pulse" />
-                    <div className="h-3 w-52 bg-[#f2f4f7] animate-pulse" />
+                    <div className="h-3.5 w-36 bg-band animate-pulse" />
+                    <div className="h-3 w-52 bg-band animate-pulse" />
                   </div>
                 </div>
               ))}
               {!loading && recentPatients.length === 0 && (
                 <div className="px-5 py-10 text-center">
-                  <Users className="h-8 w-8 mx-auto mb-2 text-[#d9d9d9]" />
-                  <p className="text-sm text-[#6a6a6a]">Sin pacientes registrados</p>
+                  <Users className="h-8 w-8 mx-auto mb-2 text-line" />
+                  <p className="text-sm text-muted">Sin pacientes registrados</p>
                 </div>
               )}
               {recentPatients.map((p, i) => {
@@ -232,15 +237,15 @@ export default function EspecialistaHomePage() {
                 return (
                   <div
                     key={p.id}
-                    className={`px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-[#f5f5f5] transition-colors ${i < recentPatients.length - 1 ? "border-b border-[#e8e8e8]" : ""}`}
+                    className={`px-5 py-3.5 flex items-center justify-between gap-3 hover:bg-canvas transition-colors ${i < recentPatients.length - 1 ? "border-b border-line-soft" : ""}`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 bg-[#1d2d3e] flex items-center justify-center text-white font-bold text-xs shrink-0">
+                      <div className="h-8 w-8 bg-ink flex items-center justify-center text-white font-bold text-xs shrink-0">
                         {p.full_name.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-semibold text-sm text-[#1d2d3e]">{p.full_name}</p>
-                        <p className="text-xs text-[#6a6a6a]">{p.email}</p>
+                        <p className="font-semibold text-sm text-ink">{p.full_name}</p>
+                        <p className="text-xs text-muted">{p.email}</p>
                       </div>
                     </div>
                     <span className={`flex items-center gap-1.5 text-xs font-medium shrink-0 ${st.text}`}>
@@ -256,20 +261,20 @@ export default function EspecialistaHomePage() {
           {/* Recent Activity */}
           <section className="lg:col-span-2">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider">Actividad Reciente</p>
-              <TrendingUp className="h-3.5 w-3.5 text-[#6a6a6a]" />
+              <p className="text-[11px] font-bold text-muted uppercase tracking-wider">Actividad Reciente</p>
+              <TrendingUp className="h-3.5 w-3.5 text-muted" />
             </div>
-            <div className="border border-[#d9d9d9] bg-white">
+            <div className="border border-line bg-surface">
               {loading && Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="px-4 py-3 border-b border-[#e8e8e8] last:border-0 space-y-1.5">
-                  <div className="h-3.5 w-36 bg-[#f2f4f7] animate-pulse" />
-                  <div className="h-3 w-24 bg-[#f2f4f7] animate-pulse" />
+                <div key={i} className="px-4 py-3 border-b border-line-soft last:border-0 space-y-1.5">
+                  <div className="h-3.5 w-36 bg-band animate-pulse" />
+                  <div className="h-3 w-24 bg-band animate-pulse" />
                 </div>
               ))}
               {!loading && recentActivity.length === 0 && (
                 <div className="px-5 py-8 text-center">
-                  <ClipboardList className="h-7 w-7 mx-auto mb-2 text-[#d9d9d9]" />
-                  <p className="text-sm text-[#6a6a6a]">Sin actividad reciente</p>
+                  <ClipboardList className="h-7 w-7 mx-auto mb-2 text-line" />
+                  <p className="text-sm text-muted">Sin actividad reciente</p>
                 </div>
               )}
               {recentActivity.map((a, i) => {
@@ -278,18 +283,18 @@ export default function EspecialistaHomePage() {
                 return (
                   <div
                     key={a.id}
-                    className={`px-4 py-3 hover:bg-[#f5f5f5] transition-colors ${i < recentActivity.length - 1 ? "border-b border-[#e8e8e8]" : ""}`}
+                    className={`px-4 py-3 hover:bg-canvas transition-colors ${i < recentActivity.length - 1 ? "border-b border-line-soft" : ""}`}
                   >
                     <div className="flex items-start gap-2.5">
                       <StatusIcon className={`h-3.5 w-3.5 mt-0.5 shrink-0 ${st.color}`} />
                       <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-sm text-[#1d2d3e] truncate">{a.exam_title}</p>
-                        <p className="text-xs text-[#6a6a6a] truncate">{a.patient_name}</p>
+                        <p className="font-semibold text-sm text-ink truncate">{a.exam_title}</p>
+                        <p className="text-xs text-muted truncate">{a.patient_name}</p>
                         <div className="flex items-center justify-between mt-1">
                           <span className={`text-[10px] font-semibold px-1.5 py-0.5 ${st.bg} ${st.color}`}>
                             {st.label}
                           </span>
-                          <span className="text-[10px] text-[#6a6a6a]">
+                          <span className="text-[10px] text-muted">
                             {format(new Date(a.assigned_at), "d MMM, HH:mm", { locale: es })}
                           </span>
                         </div>
@@ -304,8 +309,8 @@ export default function EspecialistaHomePage() {
 
         {/* Quick Actions */}
         <section>
-          <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider mb-2">Acciones Rapidas</p>
-          <div className="border border-[#d9d9d9] bg-white divide-y divide-[#e8e8e8]">
+          <p className="text-[11px] font-bold text-muted uppercase tracking-wider mb-2">Acciones Rapidas</p>
+          <div className="border border-line bg-surface divide-y divide-line-soft">
             {[
               { href: "/especialista/pacientes", icon: Users,         label: "Gestionar Pacientes" },
               { href: "/especialista/agenda",    icon: Calendar,      label: "Ver Agenda" },
@@ -314,13 +319,13 @@ export default function EspecialistaHomePage() {
               <Link
                 key={href}
                 href={href}
-                className="flex items-center justify-between px-5 py-3.5 hover:bg-[#f5f5f5] transition-colors group"
+                className="flex items-center justify-between px-5 py-3.5 hover:bg-canvas transition-colors group"
               >
                 <div className="flex items-center gap-3">
-                  <Icon className="h-4 w-4 text-[#0070f2]" />
-                  <span className="font-medium text-sm text-[#1d2d3e]">{label}</span>
+                  <Icon className="h-4 w-4 text-brand" />
+                  <span className="font-medium text-sm text-ink">{label}</span>
                 </div>
-                <ChevronRight className="h-4 w-4 text-[#6a6a6a] group-hover:text-[#0070f2] transition-colors" />
+                <ChevronRight className="h-4 w-4 text-muted group-hover:text-brand transition-colors" />
               </Link>
             ))}
           </div>
@@ -328,22 +333,22 @@ export default function EspecialistaHomePage() {
 
         {/* Focus Areas */}
         <section>
-          <div className="border border-[#d9d9d9] bg-white">
-            <div className="px-5 py-3 border-b border-[#d9d9d9] bg-[#f2f4f7] flex items-center justify-between flex-wrap gap-3">
+          <div className="border border-line bg-surface">
+            <div className="px-5 py-3 border-b border-line bg-band flex items-center justify-between flex-wrap gap-3">
               <div>
-                <p className="text-sm font-semibold text-[#1d2d3e]">Areas de Enfoque</p>
-                <p className="text-xs text-[#6a6a6a] mt-0.5">Seleccione las condiciones en que se especializa. Visible en el perfil publico.</p>
+                <p className="text-sm font-semibold text-ink">Areas de Enfoque</p>
+                <p className="text-xs text-muted mt-0.5">Seleccione las condiciones en que se especializa. Visible en el perfil publico.</p>
               </div>
               <div className="flex items-center gap-3 shrink-0">
                 {areasSaved && (
-                  <span className="flex items-center gap-1.5 text-xs text-[#107e3e] font-semibold">
+                  <span className="flex items-center gap-1.5 text-xs text-ok font-semibold">
                     <Check className="h-3.5 w-3.5" /> Guardado
                   </span>
                 )}
                 <button
                   onClick={handleSaveAreas}
                   disabled={savingAreas}
-                  className="flex items-center gap-2 px-4 py-1.5 bg-[#0070f2] text-white text-xs font-semibold hover:bg-[#0057c2] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-2 px-4 py-1.5 bg-brand text-white text-xs font-semibold hover:bg-brand-strong transition-colors disabled:opacity-50"
                 >
                   {savingAreas && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
                   Guardar
@@ -362,8 +367,8 @@ export default function EspecialistaHomePage() {
                       )}
                       className={`px-3 py-1.5 text-xs font-medium border transition-colors ${
                         isActive
-                          ? "border-[#0070f2] bg-[#eaf1fb] text-[#0070f2]"
-                          : "border-[#d9d9d9] bg-white text-[#1d2d3e] hover:bg-[#f5f5f5]"
+                          ? "border-brand bg-brand-soft text-brand"
+                          : "border-line bg-surface text-ink hover:bg-canvas"
                       }`}
                     >
                       {area}

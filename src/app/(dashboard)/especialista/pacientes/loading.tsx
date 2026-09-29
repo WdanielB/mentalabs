@@ -17,7 +17,7 @@ export default function Loading() {
 
 export function PatientsSkeleton() {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
       <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50/50">
         {['col-span-2 w-20', 'w-16', 'w-24', 'w-16'].map((cls, i) => (
           <div key={i} className={`h-3 rounded ${cls} bg-slate-200 animate-pulse`} />

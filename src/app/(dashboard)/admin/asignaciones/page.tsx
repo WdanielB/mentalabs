@@ -79,7 +79,7 @@ export default function AdminAsignacionesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+    <div className="min-h-screen bg-canvas text-ink flex font-sans">
       <AdminSidebar />
       <main className="flex-1 lg:ml-64 p-6 lg:p-8">
         <div className="mb-8">
@@ -90,7 +90,7 @@ export default function AdminAsignacionesPage() {
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-white border border-slate-200 animate-pulse" />
+              <div key={i} className="h-20 rounded-xl bg-surface border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : (
@@ -98,7 +98,7 @@ export default function AdminAsignacionesPage() {
             {patients.map((p) => {
               const pa = getPatientAssignments(p.id);
               return (
-                <div key={p.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                <div key={p.id} className="bg-surface rounded-xl border border-slate-200 p-4">
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
@@ -111,7 +111,7 @@ export default function AdminAsignacionesPage() {
                     </div>
                     <button
                       onClick={() => openAssign(p)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#136dec] text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-colors shrink-0"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-colors shrink-0"
                     >
                       <Plus className="h-3.5 w-3.5" /> Asignar
                     </button>
@@ -124,7 +124,7 @@ export default function AdminAsignacionesPage() {
                           key={a.id}
                           className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 border border-blue-200 rounded-lg text-xs"
                         >
-                          <span className="font-medium text-[#136dec]">
+                          <span className="font-medium text-brand">
                             {a.specialists?.profiles?.full_name}
                           </span>
                           <span className="text-slate-400">·</span>
@@ -148,7 +148,7 @@ export default function AdminAsignacionesPage() {
             })}
 
             {patients.length === 0 && (
-              <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+              <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
                 <UserPlus className="h-10 w-10 mx-auto mb-3 text-slate-300" />
                 <p className="font-semibold text-slate-700">Sin pacientes registrados</p>
               </div>
@@ -159,7 +159,7 @@ export default function AdminAsignacionesPage() {
         {/* Assign modal */}
         {showModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-            <div className="bg-white rounded-xl border border-slate-200 w-full max-w-md shadow-xl">
+            <div className="bg-surface rounded-xl border border-slate-200 w-full max-w-md shadow-xl">
               <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
                 <div>
                   <h2 className="font-semibold">Asignar psicólogo</h2>
@@ -188,7 +188,7 @@ export default function AdminAsignacionesPage() {
                         onClick={() => setSelectedSpec(s.id)}
                         className={`w-full flex items-center justify-between p-3 rounded-lg border text-left transition-colors ${
                           selectedSpec === s.id
-                            ? "border-[#136dec] bg-blue-50"
+                            ? "border-brand bg-blue-50"
                             : "border-slate-200 hover:bg-slate-50"
                         }`}
                       >
@@ -208,7 +208,7 @@ export default function AdminAsignacionesPage() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={2}
-                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent"
+                    className="w-full rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
                   />
                 </div>
                 <div className="flex gap-3 pt-1">
@@ -221,7 +221,7 @@ export default function AdminAsignacionesPage() {
                   <button
                     onClick={handleAssign}
                     disabled={isPending || !selectedSpec}
-                    className="flex-[2] py-2.5 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                    className="flex-[2] py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
                   >
                     {isPending ? "Asignando..." : "Confirmar asignación"}
                   </button>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Brain, Zap, Target, Play, RotateCcw, Trophy, Timer } from "lucide-react";
+import { gameById } from "./games/registry";
 
 interface GameConfig {
  game_type?: string;
@@ -26,6 +27,10 @@ interface GameRendererProps {
 
 export default function GameRenderer({ config, onComplete, preview = false }: GameRendererProps) {
  const type = config.game_type ?? "memory_cards";
+
+ // Juegos clínicos (Stroop, D2-R, CARAS-R, Torre de Londres), portados de DTEP.
+ const clinical = gameById(type);
+ if (clinical) return <clinical.Component config={config} onComplete={onComplete} preview={preview} />;
 
  if (type === "memory_cards") return <MemoryCardsGame config={config} onComplete={onComplete} preview={preview} />;
  if (type === "reaction_time") return <ReactionGame config={config} onComplete={onComplete} preview={preview} />;
@@ -143,7 +148,7 @@ function MemoryCardsGame({ config, onComplete, preview }: GameRendererProps) {
  <div className="p-6 bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-2xl border border-slate-200 ">
  <div className="flex items-center justify-between mb-6">
  <div className="flex items-center gap-2 text-sm font-semibold">
- <Timer className="h-4 w-4 text-[#136dec]" />
+ <Timer className="h-4 w-4 text-brand" />
  <span className={timeLeft < 10 ? "text-red-500" : ""}>{timeLeft}s</span>
  </div>
  <div className="text-sm font-bold text-slate-500">{matched}/{pairs} pares</div>
@@ -152,7 +157,7 @@ function MemoryCardsGame({ config, onComplete, preview }: GameRendererProps) {
  <div className="grid grid-cols-4 gap-3" style={{ gridTemplateColumns: `repeat(${Math.min(4, pairs * 2)}, 1fr)` }}>
  {cards.map((card, i) => (
  <button key={i} onClick={() => handleFlip(i)} disabled={flipped.length === 2}
- className={`aspect-square rounded-2xl border-2 transition-all duration-300 ${card.matched ? "opacity-30 scale-95" : "hover:scale-105"} ${card.flipped || card.matched ? "border-transparent" : "bg-white border-slate-200 hover:border-[#136dec]"}`}
+ className={`aspect-square rounded-2xl border-2 transition-all duration-300 ${card.matched ? "opacity-30 scale-95" : "hover:scale-105"} ${card.flipped || card.matched ? "border-transparent" : "bg-surface border-slate-200 hover:border-brand"}`}
  style={{ background: (card.flipped || card.matched) ? card.color : undefined }}>
  {!card.flipped && !card.matched && <span className="text-3xl text-slate-300">?</span>}
  </button>
@@ -237,21 +242,21 @@ function ReactionGame({ config, onComplete, preview }: GameRendererProps) {
  const avg = times.length > 0 ? Math.round(times.reduce((a, b) => a + b, 0) / times.length) : 0;
  return (
  <div className="p-8 text-center bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border border-green-200 ">
- <Trophy className="h-12 w-12 mx-auto mb-3 text-[#0bda5e]" />
- <p className="text-3xl font-black text-[#0bda5e] mb-1">{avg}ms</p>
+ <Trophy className="h-12 w-12 mx-auto mb-3 text-accent" />
+ <p className="text-3xl font-black text-accent mb-1">{avg}ms</p>
  <p className="text-sm text-slate-500 mb-4">Tiempo de reacción promedio</p>
  <p className="text-xs text-slate-400">Errores: {missed} omitidas, {falseStarts} anticipaciones</p>
- {preview && <button onClick={startGame} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 "><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
+ {preview && <button onClick={startGame} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-surface border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 "><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
  </div>
  );
  }
 
  return (
  <div onClick={handleClick} className="cursor-pointer">
- <div className={`p-12 min-h-[280px] flex flex-col items-center justify-center rounded-2xl border-2 transition-all ${stage === "click" ? "bg-[#0bda5e] border-[#0bda5e]" : "bg-slate-100 border-slate-300 "}`}>
+ <div className={`p-12 min-h-[280px] flex flex-col items-center justify-center rounded-2xl border-2 transition-all ${stage === "click" ? "bg-accent border-accent" : "bg-slate-100 border-slate-300 "}`}>
  {stage === "click" ? (
  <>
- <div className="h-24 w-24 rounded-full bg-white shadow-2xl animate-pulse" />
+ <div className="h-24 w-24 rounded-full bg-surface shadow-2xl animate-pulse" />
  <p className="text-white font-black mt-4 text-xl">¡Toca AHORA!</p>
  </>
  ) : (
@@ -339,10 +344,10 @@ function AttentionGame({ config, onComplete, preview }: GameRendererProps) {
  <p className="text-3xl font-black text-purple-600 mb-1">{acc}%</p>
  <p className="text-sm text-slate-500 mb-4">Precisión</p>
  <div className="flex justify-center gap-6 text-sm">
- <span className="text-slate-500">Aciertos: <span className="font-bold text-[#0bda5e]">{hits}</span></span>
+ <span className="text-slate-500">Aciertos: <span className="font-bold text-accent">{hits}</span></span>
  <span className="text-slate-500">Errores: <span className="font-bold text-red-500">{falsePos + misses}</span></span>
  </div>
- {preview && <button onClick={start} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold"><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
+ {preview && <button onClick={start} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-surface border border-slate-200 rounded-xl text-sm font-semibold"><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
  </div>
  );
  }
@@ -353,7 +358,7 @@ function AttentionGame({ config, onComplete, preview }: GameRendererProps) {
  <div className="text-sm font-semibold text-purple-600">{timeLeft}s restantes</div>
  <div className="text-sm text-slate-500">Aciertos: {hits}</div>
  </div>
- <button onClick={handleTap} className="w-full min-h-[260px] flex items-center justify-center bg-white rounded-2xl border-2 border-slate-200 hover:border-purple-400 transition-all active:scale-95">
+ <button onClick={handleTap} className="w-full min-h-[260px] flex items-center justify-center bg-surface rounded-2xl border-2 border-slate-200 hover:border-purple-400 transition-all active:scale-95">
  {target === "shape" ? (
  <div className="h-32 w-32 rounded-full bg-purple-500 shadow-2xl" />
  ) : (
@@ -441,10 +446,10 @@ function SortingGame({ config, onComplete, preview }: GameRendererProps) {
  const accuracy = Math.round((hits / total) * 100);
  return (
  <div className="p-8 text-center bg-blue-50 rounded-2xl border border-blue-200 ">
- <Trophy className="h-12 w-12 mx-auto mb-3 text-[#136dec]" />
- <p className="text-3xl font-black text-[#136dec] mb-1">{accuracy}%</p>
+ <Trophy className="h-12 w-12 mx-auto mb-3 text-brand" />
+ <p className="text-3xl font-black text-brand mb-1">{accuracy}%</p>
  <p className="text-sm text-slate-500">Precisión total</p>
- {preview && <button onClick={start} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold"><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
+ {preview && <button onClick={start} className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-surface border border-slate-200 rounded-xl text-sm font-semibold"><RotateCcw className="h-3.5 w-3.5" /> Repetir</button>}
  </div>
  );
  }
@@ -454,7 +459,7 @@ function SortingGame({ config, onComplete, preview }: GameRendererProps) {
  return (
  <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 ">
  <div className="flex items-center justify-between mb-4">
- <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-100 text-[#136dec]">
+ <span className="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-100 text-brand">
  Clasifica por: {rule === "color" ? "COLOR" : "FORMA"}
  </span>
  <span className="text-sm text-slate-500">{round + 1}/{total}</span>
@@ -468,11 +473,11 @@ function SortingGame({ config, onComplete, preview }: GameRendererProps) {
  </div>
  <div className="grid grid-cols-2 gap-3">
  <button onClick={() => handleAnswer("blue_or_circle")}
- className="py-4 bg-white border-2 border-slate-200 rounded-xl font-bold text-sm hover:border-[#136dec] transition-all active:scale-95">
+ className="py-4 bg-surface border-2 border-slate-200 rounded-xl font-bold text-sm hover:border-brand transition-all active:scale-95">
  {rule === "color" ? "AZUL" : "CÍRCULO"}
  </button>
  <button onClick={() => handleAnswer("red_or_square")}
- className="py-4 bg-white border-2 border-slate-200 rounded-xl font-bold text-sm hover:border-red-400 transition-all active:scale-95">
+ className="py-4 bg-surface border-2 border-slate-200 rounded-xl font-bold text-sm hover:border-red-400 transition-all active:scale-95">
  {rule === "color" ? "ROJO" : "CUADRADO"}
  </button>
  </div>
@@ -490,11 +495,11 @@ function GameIntro({
  const bg = { blue: "from-blue-50 to-cyan-50 ", green: "from-green-50 to-emerald-50 ", purple: "from-purple-50 to-violet-50 " }[color] ?? "";
  return (
  <div className={`p-8 text-center bg-gradient-to-br ${bg} rounded-2xl border border-slate-200 `}>
- <Icon className="h-12 w-12 mx-auto mb-4 text-[#136dec]" />
+ <Icon className="h-12 w-12 mx-auto mb-4 text-brand" />
  <h3 className="font-black text-xl mb-2">{title}</h3>
  <p className="text-sm text-slate-500 mb-6 max-w-sm mx-auto">{description}</p>
  <button onClick={onStart}
- className="inline-flex items-center gap-2 px-6 py-3 bg-[#136dec] text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-[#136dec]/20 active:scale-95">
+ className="inline-flex items-center gap-2 px-6 py-3 bg-brand text-white rounded-xl font-bold hover:bg-blue-600 transition-all shadow-lg shadow-brand/20 active:scale-95">
  <Play className="h-4 w-4" /> Iniciar Ejercicio
  </button>
  </div>
@@ -505,8 +510,8 @@ function GameDone({ moves, errors, preview, onRetry }: { moves: number; errors: 
  const accuracy = moves > 0 ? Math.round(((moves - errors) / moves) * 100) : 0;
  return (
  <div className="p-8 text-center bg-gradient-to-br from-green-50 to-blue-50 rounded-2xl border border-green-200 ">
- <Trophy className="h-12 w-12 mx-auto mb-3 text-[#0bda5e]" />
- <p className="text-3xl font-black text-[#0bda5e] mb-1">{accuracy}%</p>
+ <Trophy className="h-12 w-12 mx-auto mb-3 text-accent" />
+ <p className="text-3xl font-black text-accent mb-1">{accuracy}%</p>
  <p className="text-sm text-slate-500 mb-4">Precisión</p>
  <div className="flex justify-center gap-6 text-sm text-slate-500">
  <span>Movimientos: <span className="font-bold">{moves}</span></span>
@@ -514,7 +519,7 @@ function GameDone({ moves, errors, preview, onRetry }: { moves: number; errors: 
  </div>
  {preview && (
  <button onClick={onRetry}
- className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 ">
+ className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-surface border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 ">
  <RotateCcw className="h-3.5 w-3.5" /> Repetir
  </button>
  )}

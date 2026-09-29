@@ -103,7 +103,7 @@ export default function PacienteCitasPage() {
  try {
  const { data: { user } } = await supabase.auth.getUser();
  if (!user) throw new Error("No autenticado");
- await requestAppointment(selectedSpec, user.id, selectedDate);
+ await requestAppointment(selectedSpec, selectedDate);
  setBookingSuccess(true);
  await loadAppointments();
  } catch (err: any) {
@@ -124,7 +124,7 @@ export default function PacienteCitasPage() {
  const cfg = STATUS_CONFIG[appt.status] ?? STATUS_CONFIG.scheduled;
  const isUpcoming = isFuture(parseISO(appt.start_time)) && appt.status !== "cancelled";
  return (
- <div className={`flex items-center gap-5 p-5 bg-white rounded-xl border border-slate-200 transition-all ${isUpcoming ? "" : "opacity-60"}`}>
+ <div className={`flex items-center gap-5 p-5 bg-surface rounded-xl border border-slate-200 transition-all ${isUpcoming ? "" : "opacity-60"}`}>
  <div className="text-center min-w-[48px] shrink-0">
  <p className="text-2xl font-bold leading-none text-slate-900 ">
  {format(parseISO(appt.start_time), "d")}
@@ -162,7 +162,7 @@ export default function PacienteCitasPage() {
  href={appt.meeting_link}
  target="_blank"
  rel="noopener noreferrer"
- className="flex items-center gap-1.5 px-4 py-2 bg-[#136dec] text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-colors"
+ className="flex items-center gap-1.5 px-4 py-2 bg-brand text-white rounded-lg text-xs font-semibold hover:bg-blue-600 transition-colors"
  >
  <Video className="h-3.5 w-3.5" /> Unirse
  </a>
@@ -187,7 +187,7 @@ export default function PacienteCitasPage() {
  </div>
  <button
  onClick={openBooking}
- className="flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
+ className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
  >
  <Plus className="h-4 w-4" /> Nueva cita
  </button>
@@ -196,7 +196,7 @@ export default function PacienteCitasPage() {
  {/* Booking modal */}
  {showBooking && (
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
- <div className="bg-white rounded-xl border border-slate-200 w-full max-w-lg shadow-xl">
+ <div className="bg-surface rounded-xl border border-slate-200 w-full max-w-lg shadow-xl">
  <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 ">
  <h2 className="font-semibold">Agendar Nueva Cita</h2>
  <button onClick={() => setShowBooking(false)} className="p-1 text-slate-400 hover:text-slate-600 transition-colors">
@@ -212,7 +212,7 @@ export default function PacienteCitasPage() {
  <p className="text-slate-500 text-sm mt-1">Tu especialista confirmará la cita próximamente.</p>
  <button
  onClick={() => setShowBooking(false)}
- className="mt-4 px-4 py-2 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
+ className="mt-4 px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
  >
  Cerrar
  </button>
@@ -247,7 +247,7 @@ export default function PacienteCitasPage() {
  onClick={() => setSelectedSpec(s.id)}
  className={`w-full flex items-center justify-between gap-3 p-3 rounded-lg border text-left transition-colors ${
  selectedSpec === s.id
- ? "border-[#136dec] bg-blue-50 "
+ ? "border-brand bg-blue-50 "
  : "border-slate-200 hover:bg-slate-50 "
  }`}
  >
@@ -256,7 +256,7 @@ export default function PacienteCitasPage() {
  <p className="text-xs text-slate-400">{s.specialty}</p>
  </div>
  <div className="text-right shrink-0">
- <p className="text-sm font-bold text-[#136dec]">S/ {s.hourly_rate}/hr</p>
+ <p className="text-sm font-bold text-brand">S/ {s.hourly_rate}/hr</p>
  <p className="text-xs text-slate-400 flex items-center gap-0.5 justify-end">
  <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
  {s.rating.toFixed(1)}
@@ -277,7 +277,7 @@ export default function PacienteCitasPage() {
  value={selectedDate}
  min={minDateStr}
  onChange={(e) => setSelectedDate(e.target.value)}
- className="w-full rounded-lg border border-slate-200 bg-white p-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent text-slate-900 "
+ className="w-full rounded-lg border border-slate-200 bg-surface p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-slate-900 "
  />
  <p className="text-xs text-slate-400 mt-1">La cita tiene una duración de 1 hora.</p>
  </div>
@@ -292,7 +292,7 @@ export default function PacienteCitasPage() {
  <button
  onClick={handleBook}
  disabled={booking || !selectedSpec || !selectedDate}
- className="flex-[2] py-2.5 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
+ className="flex-[2] py-2.5 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
  >
  {booking ? "Agendando..." : "Confirmar cita"}
  </button>
@@ -307,13 +307,13 @@ export default function PacienteCitasPage() {
  {loading && (
  <div className="space-y-4">
  {Array.from({ length: 3 }).map((_, i) => (
- <div key={i} className="h-24 rounded-xl bg-white border border-slate-200 animate-pulse" />
+ <div key={i} className="h-24 rounded-xl bg-surface border border-slate-200 animate-pulse" />
  ))}
  </div>
  )}
 
  {!loading && appointments.length === 0 && (
- <div className="text-center py-16 bg-white rounded-xl border border-slate-200 ">
+ <div className="text-center py-16 bg-surface rounded-xl border border-slate-200 ">
  <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-300 " />
  <p className="font-semibold text-slate-700 ">Sin citas registradas</p>
  <p className="text-slate-400 text-sm mt-2">Agenda tu primera cita con un especialista.</p>

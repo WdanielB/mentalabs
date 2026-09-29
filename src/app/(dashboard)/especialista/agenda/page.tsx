@@ -19,7 +19,7 @@ interface Appointment {
 
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string; dot: string }> = {
  scheduled: { label: "Programada", icon: Clock, color: "text-blue-600 bg-blue-50 ", dot: "bg-blue-400" },
- confirmed: { label: "Confirmada", icon: CheckCircle2, color: "text-green-600 bg-green-50 ", dot: "bg-[#0bda5e]" },
+ confirmed: { label: "Confirmada", icon: CheckCircle2, color: "text-green-600 bg-green-50 ", dot: "bg-accent" },
  cancelled: { label: "Cancelada", icon: XCircle, color: "text-red-500 bg-red-50 ", dot: "bg-red-400" },
  completed: { label: "Completada", icon: CheckCircle2, color: "text-slate-500 bg-slate-100 ", dot: "bg-slate-400" },
 };
@@ -94,7 +94,7 @@ export default function EspecialistaAgendaPage() {
  {upcoming.length > 0 && ` · ${upcoming.length} próximas`}
  </p>
  </div>
- <button className="flex items-center gap-2 px-4 py-2.5 bg-[#136dec] hover:bg-blue-600 text-white rounded-xl font-semibold text-sm shadow-md shadow-[#136dec]/20 transition-all">
+ <button className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-blue-600 text-white rounded-xl font-semibold text-sm shadow-md shadow-brand/20 transition-all">
  <Plus className="h-4 w-4" /> Nueva Cita
  </button>
  </div>
@@ -106,7 +106,7 @@ export default function EspecialistaAgendaPage() {
  <div className="h-5 w-24 rounded bg-slate-200 animate-pulse mb-3" />
  <div className="space-y-3">
  {Array.from({ length: 2 }).map((_, j) => (
- <div key={j} className="h-24 rounded-xl bg-white border border-slate-200 animate-pulse" />
+ <div key={j} className="h-24 rounded-xl bg-surface border border-slate-200 animate-pulse" />
  ))}
  </div>
  </div>
@@ -115,7 +115,7 @@ export default function EspecialistaAgendaPage() {
  )}
 
  {!loading && appointments.length === 0 && (
- <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 ">
+ <div className="text-center py-20 bg-surface rounded-2xl border border-slate-200 ">
  <Calendar className="h-14 w-14 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-700 text-lg">Sin citas registradas</p>
  <p className="text-slate-400 text-sm mt-2">Crea tu primera cita con el botón de arriba</p>
@@ -142,7 +142,7 @@ export default function EspecialistaAgendaPage() {
  return (
  <div
  key={appt.id}
- className={`flex items-center gap-4 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm transition-all ${
+ className={`flex items-center gap-4 p-5 bg-surface rounded-2xl border border-slate-200 shadow-sm transition-all ${
  isPast ? "opacity-60" : "hover:shadow-md hover:border-slate-300 "
  }`}
  >
@@ -161,7 +161,7 @@ export default function EspecialistaAgendaPage() {
  {/* Patient info */}
  <div className="flex-1 min-w-0">
  <div className="flex items-center gap-2">
- <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold text-xs shrink-0">
+ <div className="h-8 w-8 rounded-full bg-gradient-to-tr from-accent to-brand flex items-center justify-center text-white font-bold text-xs shrink-0">
  {appt.patient_name.charAt(0).toUpperCase()}
  </div>
  <div>
@@ -181,7 +181,7 @@ export default function EspecialistaAgendaPage() {
  href={appt.meeting_link}
  target="_blank"
  rel="noopener noreferrer"
- className="flex items-center gap-1.5 px-3 py-1.5 bg-[#136dec] text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
+ className="flex items-center gap-1.5 px-3 py-1.5 bg-brand text-white rounded-lg text-xs font-bold hover:bg-blue-600 transition-colors"
  >
  <Video className="h-3 w-3" /> Unirse
  </a>

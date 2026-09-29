@@ -107,7 +107,7 @@ export default function EspecialistaHorariosPage() {
       </div>
 
       {/* Add new block */}
-      <div className="bg-white rounded-xl border border-slate-200 p-5 mb-8">
+      <div className="bg-surface rounded-xl border border-slate-200 p-5 mb-8">
         <h2 className="font-semibold text-sm mb-4">Agregar bloque de disponibilidad</h2>
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 items-end">
           <div>
@@ -115,7 +115,7 @@ export default function EspecialistaHorariosPage() {
             <select
               value={newBlock.day_of_week}
               onChange={(e) => setNewBlock((p) => ({ ...p, day_of_week: Number(e.target.value) }))}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent"
+              className="w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             >
               {allDays.map((d) => (
                 <option key={d} value={d}>{DAYS[d]}</option>
@@ -128,7 +128,7 @@ export default function EspecialistaHorariosPage() {
               type="time"
               value={newBlock.start_time}
               onChange={(e) => setNewBlock((p) => ({ ...p, start_time: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent"
+              className="w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
           <div>
@@ -137,13 +137,13 @@ export default function EspecialistaHorariosPage() {
               type="time"
               value={newBlock.end_time}
               onChange={(e) => setNewBlock((p) => ({ ...p, end_time: e.target.value }))}
-              className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent"
+              className="w-full rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
             />
           </div>
           <button
             onClick={handleAdd}
             disabled={isPending}
-            className="flex items-center justify-center gap-2 w-full py-2 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
           >
             <Plus className="h-4 w-4" /> Agregar
           </button>
@@ -157,11 +157,11 @@ export default function EspecialistaHorariosPage() {
       {loading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-16 rounded-xl bg-white border border-slate-200 animate-pulse" />
+            <div key={i} className="h-16 rounded-xl bg-surface border border-slate-200 animate-pulse" />
           ))}
         </div>
       ) : schedules.length === 0 ? (
-        <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+        <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
           <Clock className="h-10 w-10 mx-auto mb-3 text-slate-300" />
           <p className="font-semibold text-slate-700">Sin horarios configurados</p>
           <p className="text-slate-400 text-sm mt-1">Agrega bloques de disponibilidad para que los pacientes puedan agendar citas.</p>
@@ -169,7 +169,7 @@ export default function EspecialistaHorariosPage() {
       ) : (
         <div className="space-y-3">
           {allDays.filter((d) => byDay[d]?.length > 0).map((d) => (
-            <div key={d} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div key={d} className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
               <div className="px-4 py-3 border-b border-slate-100 bg-slate-50">
                 <p className="font-semibold text-sm text-slate-700">{DAYS[d]}</p>
               </div>
@@ -177,7 +177,7 @@ export default function EspecialistaHorariosPage() {
                 {byDay[d].map((s) => (
                   <div key={s.id} className={`flex items-center justify-between gap-3 px-4 py-3 ${!s.is_active ? "opacity-50" : ""}`}>
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-[#136dec]" />
+                      <Clock className="h-4 w-4 text-brand" />
                       <span className="font-medium text-sm">
                         {s.start_time.slice(0, 5)} – {s.end_time.slice(0, 5)}
                       </span>
@@ -189,7 +189,7 @@ export default function EspecialistaHorariosPage() {
                       <button
                         onClick={() => handleToggle(s.id, s.is_active)}
                         disabled={isPending}
-                        className="text-xs text-slate-400 hover:text-[#136dec] font-medium transition-colors disabled:opacity-50"
+                        className="text-xs text-slate-400 hover:text-brand font-medium transition-colors disabled:opacity-50"
                       >
                         {s.is_active ? "Desactivar" : "Activar"}
                       </button>

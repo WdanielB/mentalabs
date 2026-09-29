@@ -17,7 +17,7 @@ interface PublishedExam {
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   active: { label: 'Activo', color: 'bg-green-100 text-green-700' },
   inactive: { label: 'Inactivo', color: 'bg-slate-100 text-slate-500' },
-  in_treatment: { label: 'En tratamiento', color: 'bg-blue-100 text-[#136dec]' },
+  in_treatment: { label: 'En tratamiento', color: 'bg-blue-100 text-brand' },
 }
 
 interface Props {
@@ -110,11 +110,11 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar por nombre o email..."
-          className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-[#136dec] focus:border-transparent outline-none transition-all"
+          className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-surface text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all"
         />
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50/50">
           <span className="col-span-2 text-xs font-bold text-slate-400 uppercase tracking-wider">Paciente</span>
           <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Estado</span>
@@ -139,7 +139,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
               className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 px-6 py-4 border-b border-slate-100 hover:bg-slate-50 transition-colors items-center"
             >
               <div className="col-span-2 flex items-center gap-3">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold text-sm shrink-0">
+                <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-accent to-brand flex items-center justify-center text-white font-bold text-sm shrink-0">
                   {p.full_name.charAt(0).toUpperCase()}
                 </div>
                 <div className="min-w-0">
@@ -184,7 +184,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
                 </Link>
                 <button
                   onClick={() => openAssignModal(p)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#136dec]/10 text-[#136dec] hover:bg-[#136dec] hover:text-white rounded-lg text-xs font-bold transition-all"
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-brand/10 text-brand hover:bg-brand hover:text-white rounded-lg text-xs font-bold transition-all"
                 >
                   <ClipboardList className="h-3.5 w-3.5" /> Asignar Examen
                 </button>
@@ -197,7 +197,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
       {/* Assignment Modal */}
       {assignTarget && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+          <div className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
               <div>
                 <h2 className="font-bold text-base">Asignar Examen</h2>
@@ -216,7 +216,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
             <div className="p-4 max-h-80 overflow-y-auto">
               {loadingExams && (
                 <div className="flex items-center justify-center py-10">
-                  <Loader2 className="h-6 w-6 animate-spin text-[#136dec]" />
+                  <Loader2 className="h-6 w-6 animate-spin text-brand" />
                 </div>
               )}
 
@@ -232,7 +232,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
 
               {assignedFlash && (
                 <div className="flex items-center gap-3 p-4 bg-green-50 rounded-xl border border-green-200">
-                  <CheckCircle2 className="h-6 w-6 text-[#0bda5e] shrink-0" />
+                  <CheckCircle2 className="h-6 w-6 text-accent shrink-0" />
                   <div>
                     <p className="font-bold text-sm text-green-700">¡Examen asignado!</p>
                     <p className="text-xs text-green-600">El paciente lo verá en su dashboard.</p>
@@ -247,14 +247,14 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
                     onClick={() => setSelectedExam(exam.id)}
                     className={`w-full flex items-start gap-3 p-3 rounded-xl text-left mb-2 border-2 transition-all ${
                       selectedExam === exam.id
-                        ? 'border-[#136dec] bg-blue-50'
+                        ? 'border-brand bg-blue-50'
                         : 'border-transparent hover:border-slate-200 hover:bg-slate-50'
                     }`}
                   >
                     <div
                       className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
                         selectedExam === exam.id
-                          ? 'bg-[#136dec] text-white'
+                          ? 'bg-brand text-white'
                           : 'bg-slate-100 text-slate-500'
                       }`}
                     >
@@ -270,7 +270,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
                       </p>
                     </div>
                     {selectedExam === exam.id && (
-                      <CheckCircle2 className="h-5 w-5 text-[#136dec] shrink-0 ml-auto" />
+                      <CheckCircle2 className="h-5 w-5 text-brand shrink-0 ml-auto" />
                     )}
                   </button>
                 ))}
@@ -287,7 +287,7 @@ export default function PatientsClient({ initialPatients, specialistId }: Props)
                 <button
                   onClick={handleAssign}
                   disabled={!selectedExam || assigning}
-                  className="flex items-center gap-2 px-5 py-2 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-md shadow-[#136dec]/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-5 py-2 bg-brand text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-all shadow-md shadow-brand/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {assigning ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

@@ -96,14 +96,14 @@ export default function TutorReportesPage() {
  {Array.from({ length: 2 }).map((_, i) => (
  <div
  key={i}
- className="h-40 rounded-xl bg-white border border-slate-200 animate-pulse"
+ className="h-40 rounded-xl bg-surface border border-slate-200 animate-pulse"
  />
  ))}
  </div>
  )}
 
  {!loading && reports.length === 0 && (
- <div className="text-center py-16 bg-white rounded-xl border border-slate-200 ">
+ <div className="text-center py-16 bg-surface rounded-xl border border-slate-200 ">
  <BarChart3 className="h-10 w-10 mx-auto mb-3 text-slate-300 " />
  <p className="font-semibold text-slate-700 ">Sin datos aún</p>
  <p className="text-slate-400 text-sm mt-1">
@@ -116,7 +116,7 @@ export default function TutorReportesPage() {
  {reports.map((r) => (
  <div
  key={r.patient_id}
- className="bg-white rounded-xl border border-slate-200 overflow-hidden"
+ className="bg-surface rounded-xl border border-slate-200 overflow-hidden"
  >
  <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-3">
  <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-bold text-sm shrink-0">
@@ -143,13 +143,13 @@ export default function TutorReportesPage() {
  <div className="min-w-0">
  <p className="font-medium text-sm truncate">{e.exam_title}</p>
  {e.subcategory && (
- <p className="text-xs text-[#136dec] font-medium">{e.subcategory}</p>
+ <p className="text-xs text-brand font-medium">{e.subcategory}</p>
  )}
  </div>
  </div>
  <div className="text-right shrink-0">
  {e.total_score !== null && (
- <p className="font-bold text-[#136dec]">{e.total_score}</p>
+ <p className="font-bold text-brand">{e.total_score}</p>
  )}
  <p className="text-xs text-slate-400">
  {format(new Date(e.completed_at), "d MMM yyyy", { locale: es })}

@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   Brain, Activity, FileText, ShieldCheck, Users,
   Stethoscope, UserPlus, CalendarCheck, LogOut,
 } from "lucide-react";
-import { createClient } from "../../utils/supabase/client";
+import { signOutAndRedirect } from "../lib/auth/client";
+import { useSessionProfile } from "../lib/auth/useSessionProfile";
 
 const NAV_SECTIONS = [
   {
@@ -30,24 +31,21 @@ const NAV_SECTIONS = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const router   = useRouter();
+  // Sincroniza cierre de sesión entre pestañas y aplica el cierre por inactividad.
+  useSessionProfile("Admin");
 
-  const handleLogout = async () => {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/login");
-  };
+  const handleLogout = () => signOutAndRedirect();
 
   return (
-    <aside className="hidden lg:flex w-64 flex-col border-r border-[#d9d9d9] bg-white shrink-0 fixed h-full z-10">
+    <aside className="hidden lg:flex w-64 flex-col border-r border-line bg-surface shrink-0 fixed h-full z-10">
       {/* Product header */}
-      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-[#d9d9d9] bg-[#f2f4f7] shrink-0">
-        <div className="h-7 w-7 bg-[#0070f2] flex items-center justify-center shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3.5 border-b border-line bg-band shrink-0">
+        <div className="h-7 w-7 bg-brand flex items-center justify-center shrink-0">
           <Brain className="h-4 w-4 text-white" />
         </div>
         <div>
-          <p className="font-bold text-sm text-[#1d2d3e] leading-tight">MentaLabs</p>
-          <p className="text-[10px] text-[#6a6a6a] leading-tight mt-0.5">Administracion del Sistema</p>
+          <p className="font-bold text-sm text-ink leading-tight">MentaLabs</p>
+          <p className="text-[10px] text-muted leading-tight mt-0.5">Administracion del Sistema</p>
         </div>
       </div>
 
@@ -55,7 +53,7 @@ export default function AdminSidebar() {
       <nav className="flex-1 overflow-y-auto py-2">
         {NAV_SECTIONS.map((section) => (
           <div key={section.label} className="mb-2">
-            <p className="px-4 pt-3 pb-1.5 text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider">
+            <p className="px-4 pt-3 pb-1.5 text-[10px] font-bold text-muted uppercase tracking-wider">
               {section.label}
             </p>
             {section.items.map(({ icon: Icon, label, href }) => {
@@ -65,10 +63,11 @@ export default function AdminSidebar() {
                 <Link
                   key={href}
                   href={href}
-                  className={`flex items-center gap-3 px-4 py-2.5 text-sm border-l-[3px] transition-colors ${
+                  aria-current={active ? "page" : undefined}
+                  className={`mx-2 flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-colors ${
                     active
-                      ? "border-[#0070f2] bg-[#eaf1fb] text-[#0070f2] font-semibold"
-                      : "border-transparent text-[#1d2d3e] hover:bg-[#f5f5f5] font-medium"
+                      ? "bg-brand-soft text-brand-strong font-medium"
+                      : "text-ink/80 hover:bg-band hover:text-ink"
                   }`}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -81,10 +80,10 @@ export default function AdminSidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-[#d9d9d9] p-3 shrink-0">
+      <div className="border-t border-line p-3 shrink-0">
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-[#6a6a6a] hover:text-[#bb0000] hover:bg-[#fff0f0] transition-colors rounded"
+          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted hover:text-bad hover:bg-bad-soft transition-colors rounded"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Cerrar Sesion

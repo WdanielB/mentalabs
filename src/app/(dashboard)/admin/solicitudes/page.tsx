@@ -63,7 +63,7 @@ export default function AdminSolicitudesPage() {
   const pendingAppts    = appointments.filter((a) => a.status === "scheduled");
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+    <div className="min-h-screen bg-canvas text-ink flex font-sans">
       <AdminSidebar />
       <main className="flex-1 lg:ml-64 p-6 lg:p-8">
         <div className="mb-6">
@@ -84,7 +84,7 @@ export default function AdminSolicitudesPage() {
               onClick={() => setTab(key)}
               className={`flex items-center gap-2 px-4 py-3 text-sm font-semibold border-b-2 transition-colors ${
                 tab === key
-                  ? "border-[#136dec] text-[#136dec]"
+                  ? "border-brand text-brand"
                   : "border-transparent text-slate-400 hover:text-slate-600"
               }`}
             >
@@ -101,7 +101,7 @@ export default function AdminSolicitudesPage() {
         {loading ? (
           <div className="space-y-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-20 rounded-xl bg-white border border-slate-200 animate-pulse" />
+              <div key={i} className="h-20 rounded-xl bg-surface border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : (
@@ -110,7 +110,7 @@ export default function AdminSolicitudesPage() {
             {tab === "asignaciones" && (
               <div className="space-y-3">
                 {requests.length === 0 && (
-                  <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+                  <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
                     <CheckCircle2 className="h-10 w-10 mx-auto mb-3 text-slate-300" />
                     <p className="font-semibold text-slate-700">Sin solicitudes</p>
                     <p className="text-slate-400 text-sm mt-1">No hay solicitudes de asignación.</p>
@@ -119,7 +119,7 @@ export default function AdminSolicitudesPage() {
                 {requests.map((r) => {
                   const cfg = REQ_STATUS[r.status] ?? REQ_STATUS.pending;
                   return (
-                    <div key={r.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div key={r.id} className="bg-surface rounded-xl border border-slate-200 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -174,7 +174,7 @@ export default function AdminSolicitudesPage() {
             {tab === "citas" && (
               <div className="space-y-3">
                 {appointments.length === 0 && (
-                  <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+                  <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
                     <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-300" />
                     <p className="font-semibold text-slate-700">Sin citas pendientes</p>
                   </div>
@@ -182,7 +182,7 @@ export default function AdminSolicitudesPage() {
                 {appointments.map((a) => {
                   const cfg = APPT_STATUS[a.status] ?? APPT_STATUS.scheduled;
                   return (
-                    <div key={a.id} className="bg-white rounded-xl border border-slate-200 p-4">
+                    <div key={a.id} className="bg-surface rounded-xl border border-slate-200 p-4">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap mb-1">

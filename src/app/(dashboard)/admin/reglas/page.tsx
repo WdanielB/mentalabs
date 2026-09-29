@@ -66,45 +66,45 @@ function RuleForm({
  };
 
  return (
- <div className="bg-slate-50 rounded-2xl border-2 border-[#136dec]/40 p-5 space-y-4">
+ <div className="bg-slate-50 rounded-2xl border-2 border-brand/40 p-5 space-y-4">
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Score Mínimo</label>
  <input type="number" value={minScore} onChange={e => setMinScore(e.target.value)}
- className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Score Máximo</label>
  <input type="number" value={maxScore} onChange={e => setMaxScore(e.target.value)}
- className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Edad Mínima (opcional)</label>
  <input type="number" value={minAge} onChange={e => setMinAge(e.target.value)} placeholder="Ej. 18"
- className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Edad Máxima (opcional)</label>
  <input type="number" value={maxAge} onChange={e => setMaxAge(e.target.value)} placeholder="Ej. 65"
- className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 px-3 rounded-lg border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Subcategoría / Diagnóstico *</label>
  <input type="text" value={subcat} onChange={e => setSubcat(e.target.value)}
  placeholder="Ej. Depresión Moderada, TDAH Predominantemente Inatento"
- className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-10 px-3 rounded-lg border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Recomendaciones (una por línea)</label>
  <textarea rows={4} value={recs} onChange={e => setRecs(e.target.value)}
  placeholder={"Terapia Cognitivo-Conductual\nEvaluación neuropsicológica\nRevisión en 4 semanas"}
- className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm resize-none outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-surface text-sm resize-none outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  <p className="text-xs text-slate-400 mt-1">Cada línea será una recomendación separada</p>
  </div>
  <div className="flex items-center gap-3">
  <button onClick={handle} disabled={!subcat.trim() || saving}
- className="flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors disabled:opacity-50">
+ className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors disabled:opacity-50">
  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
  {saving ? "Guardando..." : "Guardar Regla"}
  </button>
@@ -194,19 +194,19 @@ export default function ReglasPage() {
  const globalMax = rules.length ? Math.max(...rules.map(r => r.max_score)) : 100;
 
  return (
- <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+ <div className="min-h-screen bg-canvas text-ink flex font-sans">
  <AdminSidebar />
 
  <main className="flex-1 lg:ml-64 flex flex-col lg:flex-row h-screen overflow-hidden">
 
  {/* ── LEFT: Exam list ── */}
- <div className="w-full lg:w-80 flex flex-col border-r border-slate-200 bg-white shrink-0">
+ <div className="w-full lg:w-80 flex flex-col border-r border-slate-200 bg-surface shrink-0">
  <div className="p-4 border-b border-slate-200 ">
- <h2 className="font-bold text-base mb-3 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-[#0bda5e]" /> Exámenes</h2>
+ <h2 className="font-bold text-base mb-3 flex items-center gap-2"><ShieldCheck className="h-5 w-5 text-accent" /> Exámenes</h2>
  <div className="relative">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
  <input type="text" value={examSearch} onChange={e => setExamSearch(e.target.value)} placeholder="Buscar examen..."
- className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  </div>
 
@@ -217,7 +217,7 @@ export default function ReglasPage() {
  {filteredExams.map(exam => (
  <button key={exam.id} onClick={() => setSelectedId(exam.id)}
  className={`w-full flex flex-col items-start gap-1 px-4 py-3 border-b border-slate-100 text-left transition-colors relative ${selectedId === exam.id ? "bg-blue-50 " : "hover:bg-slate-50 "}`}>
- {selectedId === exam.id && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-[#136dec]" />}
+ {selectedId === exam.id && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-brand" />}
  <p className="font-semibold text-sm truncate w-full">{exam.title}</p>
  <div className="flex items-center gap-2 flex-wrap">
  {exam.battery && <span className="text-xs text-slate-400">{exam.battery}</span>}
@@ -246,19 +246,19 @@ export default function ReglasPage() {
  ) : (
  <>
  {/* Rules header */}
- <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white shrink-0">
+ <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-surface shrink-0">
  <div>
  <h2 className="font-bold text-base truncate">{selectedExam?.title}</h2>
  <p className="text-xs text-slate-500 mt-0.5">{rules.length} regla{rules.length !== 1 ? "s" : ""} configurada{rules.length !== 1 ? "s" : ""}</p>
  </div>
  <div className="flex items-center gap-3">
  {flash && (
- <span className="flex items-center gap-1.5 text-xs font-semibold text-[#0bda5e] bg-green-50 px-3 py-1.5 rounded-full">
+ <span className="flex items-center gap-1.5 text-xs font-semibold text-accent bg-green-50 px-3 py-1.5 rounded-full">
  <CheckCircle2 className="h-3.5 w-3.5" /> {flash}
  </span>
  )}
  <button onClick={() => { setAddingRule(true); setExpandedR(new Set()); }}
- className="flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20">
+ className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-brand/20">
  <Plus className="h-4 w-4" /> Añadir Regla
  </button>
  </div>
@@ -266,13 +266,13 @@ export default function ReglasPage() {
 
  <div className="flex-1 overflow-y-auto p-6 space-y-4">
  {/* Explanation */}
- <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 text-sm text-[#136dec]">
+ <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 text-sm text-brand">
  <p className="font-semibold mb-1">¿Cómo funcionan las reglas?</p>
  <p className="text-xs text-blue-600 ">Al completar el examen, el sistema compara el puntaje total y la edad del paciente con estas reglas para generar un diagnóstico automático y recomendaciones.</p>
  </div>
 
  {loadingRules && Array.from({ length: 2 }).map((_, i) => (
- <div key={i} className="h-24 rounded-2xl bg-white border border-slate-200 animate-pulse" />
+ <div key={i} className="h-24 rounded-2xl bg-surface border border-slate-200 animate-pulse" />
  ))}
 
  {/* Add rule form */}
@@ -282,7 +282,7 @@ export default function ReglasPage() {
 
  {/* Rules list */}
  {!loadingRules && rules.length === 0 && !addingRule && (
- <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 ">
+ <div className="text-center py-12 bg-surface rounded-2xl border border-slate-200 ">
  <AlertCircle className="h-10 w-10 mx-auto mb-3 text-slate-300 " />
  <p className="font-semibold text-slate-500">Sin reglas configuradas</p>
  <p className="text-slate-400 text-sm mt-1">Añade reglas para que el sistema genere diagnósticos automáticos</p>
@@ -293,7 +293,7 @@ export default function ReglasPage() {
  const isOpen = expandedR.has(rule.id);
  const sColor = severityColor(rule.min_score, rule.max_score, globalMax);
  return (
- <div key={rule.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+ <div key={rule.id} className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
  {rule.isEditing ? (
  <div className="p-5">
  <RuleForm
@@ -321,7 +321,7 @@ export default function ReglasPage() {
  </div>
  <div className="flex items-center gap-2 shrink-0">
  <button onClick={e => { e.stopPropagation(); setRules(prev => prev.map(r => r.id === rule.id ? { ...r, isEditing: true } : r)); }}
- className="p-1.5 rounded-lg text-slate-400 hover:text-[#136dec] hover:bg-blue-50 transition-colors">
+ className="p-1.5 rounded-lg text-slate-400 hover:text-brand hover:bg-blue-50 transition-colors">
  <Pencil className="h-4 w-4" />
  </button>
  <button onClick={e => { e.stopPropagation(); handleDeleteRule(rule.id); }}
@@ -341,7 +341,7 @@ export default function ReglasPage() {
  <ul className="space-y-2">
  {rule.recommendations.map((rec, i) => (
  <li key={i} className="flex items-start gap-3 text-sm">
- <span className="h-5 w-5 rounded-full bg-[#0bda5e]/20 text-[#0bda5e] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">{i + 1}</span>
+ <span className="h-5 w-5 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">{i + 1}</span>
  <span className="text-slate-700 ">{rec}</span>
  </li>
  ))}
@@ -350,7 +350,7 @@ export default function ReglasPage() {
  {/* JSON preview */}
  <details className="mt-4">
  <summary className="text-xs font-semibold text-slate-400 cursor-pointer hover:text-slate-600 ">Ver JSON de la regla</summary>
- <pre className="mt-2 p-3 bg-[#0f172a] text-green-400 text-xs rounded-xl overflow-x-auto font-mono">
+ <pre className="mt-2 p-3 bg-ink text-green-400 text-xs rounded-xl overflow-x-auto font-mono">
  {JSON.stringify({ min_score: rule.min_score, max_score: rule.max_score, min_age: rule.min_age, max_age: rule.max_age, subcategory: rule.subcategory, recommendations: rule.recommendations }, null, 2)}
  </pre>
  </details>

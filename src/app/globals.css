@@ -1,31 +1,98 @@
 @import "tailwindcss";
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-  }
+/* ── Design tokens ─────────────────────────────────────────────
+   Identidad "jacarandá": violeta profundo (los jacarandás de Lima),
+   papel cálido y verde muña como apoyo. Toda la app usa estos nombres
+   (bg-brand, text-ink, border-line…); cambiar la marca = editar aquí. */
+@theme {
+  --font-display: var(--font-display-family), var(--font-body-family), system-ui, sans-serif;
+  --font-body: var(--font-body-family), system-ui, sans-serif;
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-  }
+  --color-brand: oklch(0.5 0.17 293);
+  --color-brand-strong: oklch(0.42 0.16 293);
+  --color-brand-soft: oklch(0.955 0.025 293);
+  --color-brand-deep: oklch(0.27 0.09 290);
+
+  --color-accent: oklch(0.64 0.13 158);
+  --color-aji: oklch(0.84 0.15 82);
+
+  --color-ink: oklch(0.24 0.025 285);
+  --color-muted: oklch(0.5 0.018 285);
+  --color-line: oklch(0.885 0.008 285);
+  --color-line-soft: oklch(0.925 0.006 285);
+
+  --color-canvas: oklch(0.972 0.007 85);
+  --color-band: oklch(0.95 0.01 85);
+  --color-surface: oklch(0.992 0.003 85);
+
+  --color-ok: oklch(0.52 0.12 150);
+  --color-ok-soft: oklch(0.965 0.03 150);
+  --color-warn: oklch(0.64 0.16 55);
+  --color-warn-soft: oklch(0.97 0.03 70);
+  --color-bad: oklch(0.52 0.19 27);
+  --color-bad-soft: oklch(0.97 0.02 27);
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @layer base {
   * {
-    @apply border-slate-200;
+    @apply border-line;
+  }
+  html {
+    color-scheme: light;
+    -webkit-text-size-adjust: 100%;
   }
   body {
-    @apply bg-white text-slate-900;
-    font-family: var(--font-body), system-ui, sans-serif;
+    @apply bg-canvas text-ink font-body;
+    text-rendering: optimizeLegibility;
   }
-  .font-display {
-    font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  ::selection {
+    background: var(--color-aji);
+    color: var(--color-ink);
   }
 }
 
-/* GSAP initial states */
-.gsap-fade-up   { opacity: 0; transform: translateY(40px); }
-.gsap-fade-in   { opacity: 0; }
-.gsap-scale-in  { opacity: 0; transform: scale(0.92); }
+/* Estados iniciales para GSAP: solo si hay JS y el usuario acepta movimiento,
+   para que el contenido nunca quede invisible. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .reveal { opacity: 0; transform: translateY(24px); }
+  .js .reveal-word { display: inline-block; opacity: 0; transform: translateY(0.6em); }
+}
+
+@keyframes marquee {
+  to { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee { animation: none; }
+}
+
+/* Colapsables sin animar height: se anima grid-template-rows. */
+.collapse-rows {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 320ms var(--ease-out-quart);
+}
+.collapse-rows[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.collapse-rows > * {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.scrollbar-hide { scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+@keyframes shake {
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}

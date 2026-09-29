@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Brain, Check, ArrowRight, ChevronRight } from "lucide-react";
 
+import { SiteHeader } from "../../components/site/SiteHeader";
 const SOLUTIONS = [
  {
  id: "tdah",
  label: "TDAH",
  full: "Trastorno por Déficit de Atención e Hiperactividad",
- color: "#136dec",
+ color: "#6a48b9",
  bg: "bg-blue-50 ",
  border: "border-blue-200 ",
  desc: "Evaluaciones estandarizadas para adultos, adolescentes y niños. Escalas Conners, CAARS, ADHD Rating Scale y más.",
@@ -46,7 +47,7 @@ const SOLUTIONS = [
  id: "dislexia",
  label: "Dislexia",
  full: "Dificultades de Aprendizaje",
- color: "#0bda5e",
+ color: "#33a36d",
  bg: "bg-green-50 ",
  border: "border-green-200 ",
  desc: "Evaluación de conciencia fonológica, lectura y escritura para detección temprana.",
@@ -66,27 +67,17 @@ const SOLUTIONS = [
 
 export default function SolucionesPage() {
  return (
- <div className="min-h-screen bg-white text-slate-900 ">
+ <div className="min-h-screen bg-surface text-slate-900 ">
  {/* Nav */}
- <nav className="fixed top-0 z-50 w-full border-b border-slate-100/80 bg-white/90 backdrop-blur-xl ">
- <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-8">
- <Link href="/" className="flex items-center gap-2.5">
- <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#136dec] text-white"><Brain className="h-5 w-5" /></div>
- <span className="font-display text-lg font-700">Menta<span className="text-[#0bda5e]">Labs</span></span>
- </Link>
- <Link href="/registro" className="rounded-xl bg-[#136dec] px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-600 transition-all">
- Comenzar
- </Link>
- </div>
- </nav>
+ <SiteHeader />
 
  {/* Header */}
  <div className="pt-32 pb-16 px-6 lg:px-8 max-w-7xl mx-auto">
  <div className="text-center mb-16">
- <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#136dec] mb-4">
- <span className="h-px w-8 bg-[#136dec]" /> Plataforma de diagnóstico <span className="h-px w-8 bg-[#136dec]" />
+ <div className="inline-flex items-center gap-2 text-sm font-semibold text-brand mb-4">
+ <span className="h-px w-8 bg-brand" /> Plataforma de diagnóstico <span className="h-px w-8 bg-brand" />
  </div>
- <h1 className="font-display text-5xl lg:text-6xl font-800 tracking-tight text-slate-900 mb-6">
+ <h1 className="font-display text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
  Soluciones para cada diagnóstico
  </h1>
  <p className="text-lg text-slate-500 max-w-2xl mx-auto">
@@ -100,7 +91,7 @@ export default function SolucionesPage() {
  <span className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-4 text-white" style={{ background: s.color }}>
  {s.label}
  </span>
- <h3 className="font-display text-xl font-700 text-slate-900 mb-3">{s.full}</h3>
+ <h3 className="font-display text-xl font-bold text-slate-900 mb-3">{s.full}</h3>
  <p className="text-sm text-slate-600 mb-6 leading-relaxed">{s.desc}</p>
  <ul className="space-y-2 mb-6">
  {s.tools.map((t) => (
@@ -117,7 +108,7 @@ export default function SolucionesPage() {
  </div>
 
  <div className="mt-16 text-center">
- <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-2xl bg-[#136dec] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#136dec]/30 hover:bg-blue-600 transition-all">
+ <Link href="/marketplace" className="inline-flex items-center gap-2 rounded-2xl bg-brand px-8 py-4 text-base font-bold text-white shadow-xl shadow-brand/30 hover:bg-blue-600 transition-all">
  Buscar especialista <ArrowRight className="h-5 w-5" />
  </Link>
  </div>

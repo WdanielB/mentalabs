@@ -78,13 +78,13 @@ export default function PacienteResultadosPage() {
  {loading && (
  <div className="space-y-4">
  {Array.from({ length: 3 }).map((_, i) => (
- <div key={i} className="h-32 rounded-2xl bg-white border border-slate-200 animate-pulse" />
+ <div key={i} className="h-32 rounded-2xl bg-surface border border-slate-200 animate-pulse" />
  ))}
  </div>
  )}
 
  {!loading && results.length === 0 && (
- <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 ">
+ <div className="text-center py-20 bg-surface rounded-2xl border border-slate-200 ">
  <BarChart3 className="h-14 w-14 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-700 text-lg">Sin resultados todavía</p>
  <p className="text-slate-400 text-sm mt-2">Completa tus exámenes para ver los diagnósticos aquí.</p>
@@ -95,13 +95,13 @@ export default function PacienteResultadosPage() {
  {results.map((r) => {
  const isOpen = expanded.has(r.id);
  return (
- <div key={r.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+ <div key={r.id} className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
  {/* Header */}
  <button
  onClick={() => toggleExpand(r.id)}
  className="w-full flex items-center gap-4 p-5 text-left hover:bg-slate-50 transition-colors"
  >
- <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center shrink-0">
+ <div className="h-12 w-12 rounded-xl bg-gradient-to-tr from-accent to-brand flex items-center justify-center shrink-0">
  <BarChart3 className="h-6 w-6 text-white" />
  </div>
  <div className="flex-1 min-w-0">
@@ -114,7 +114,7 @@ export default function PacienteResultadosPage() {
  <div className="text-right shrink-0 mr-2">
  {r.total_score !== null && (
  <>
- <p className="text-2xl font-black text-[#136dec]">{r.total_score}</p>
+ <p className="text-2xl font-black text-brand">{r.total_score}</p>
  <p className="text-xs text-slate-400">Score</p>
  </>
  )}
@@ -138,7 +138,7 @@ export default function PacienteResultadosPage() {
  <ul className="space-y-2">
  {r.recommendations.map((rec, i) => (
  <li key={i} className="flex items-start gap-3 text-sm">
- <span className="h-5 w-5 rounded-full bg-[#0bda5e]/20 text-[#0bda5e] flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+ <span className="h-5 w-5 rounded-full bg-accent/20 text-accent flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
  {i + 1}
  </span>
  <span className="text-slate-700 ">{rec}</span>

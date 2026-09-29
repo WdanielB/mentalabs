@@ -46,12 +46,12 @@ export default function AdminPsicologosPage() {
     const StatusIcon = cfg.icon;
     const isOpen = expanded === s.id;
     return (
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
         <button
           onClick={() => setExpanded(isOpen ? null : s.id)}
           className="w-full flex items-center gap-4 p-4 text-left hover:bg-slate-50 transition-colors"
         >
-          <div className="h-10 w-10 rounded-full bg-[#136dec] flex items-center justify-center text-white font-bold shrink-0">
+          <div className="h-10 w-10 rounded-full bg-brand flex items-center justify-center text-white font-bold shrink-0">
             {s.profiles?.full_name?.charAt(0)?.toUpperCase() ?? "E"}
           </div>
           <div className="flex-1 min-w-0">
@@ -141,7 +141,7 @@ export default function AdminPsicologosPage() {
         )}
       </div>
       {items.length === 0 ? (
-        <p className="text-sm text-slate-400 py-4 text-center bg-white rounded-xl border border-slate-100">
+        <p className="text-sm text-slate-400 py-4 text-center bg-surface rounded-xl border border-slate-100">
           Sin psicólogos en esta categoría.
         </p>
       ) : (
@@ -153,7 +153,7 @@ export default function AdminPsicologosPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+    <div className="min-h-screen bg-canvas text-ink flex font-sans">
       <AdminSidebar />
       <main className="flex-1 lg:ml-64 p-6 lg:p-8">
         <div className="mb-8">
@@ -166,7 +166,7 @@ export default function AdminPsicologosPage() {
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-white border border-slate-200 animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-surface border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : (

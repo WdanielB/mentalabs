@@ -18,11 +18,10 @@ export function normalizeRole(value: unknown): AppRole | undefined {
   return undefined;
 }
 
+// Solo app_metadata: user_metadata lo puede editar el propio usuario con
+// auth.updateUser(), así que nunca debe decidir permisos.
 export function roleFromUserMetadata(user: any): AppRole | undefined {
-  return (
-    normalizeRole(user?.app_metadata?.role) ??
-    normalizeRole(user?.user_metadata?.role)
-  );
+  return normalizeRole(user?.app_metadata?.role);
 }
 
 export async function resolveUserRole(

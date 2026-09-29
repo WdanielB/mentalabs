@@ -10,7 +10,7 @@ import { es } from "date-fns/locale";
 const STATUS_CFG: Record<string, { label: string; color: string }> = {
   active:       { label: "Activo",         color: "bg-emerald-50 text-emerald-700 border-emerald-200" },
   inactive:     { label: "Inactivo",       color: "bg-slate-100 text-slate-500 border-slate-200" },
-  in_treatment: { label: "En tratamiento", color: "bg-blue-50 text-[#136dec] border-blue-200" },
+  in_treatment: { label: "En tratamiento", color: "bg-blue-50 text-brand border-blue-200" },
 };
 
 export default function AdminPacientesPage() {
@@ -38,7 +38,7 @@ export default function AdminPacientesPage() {
     bd ? `${differenceInYears(new Date(), new Date(bd))} años` : "—";
 
   return (
-    <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+    <div className="min-h-screen bg-canvas text-ink flex font-sans">
       <AdminSidebar />
       <main className="flex-1 lg:ml-64 p-6 lg:p-8">
         <div className="mb-6">
@@ -54,18 +54,18 @@ export default function AdminPacientesPage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar por nombre o correo..."
-            className="w-full max-w-sm rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent"
+            className="w-full max-w-sm rounded-lg border border-slate-200 bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent"
           />
         </div>
 
         {loading ? (
           <div className="space-y-2">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="h-16 rounded-xl bg-white border border-slate-200 animate-pulse" />
+              <div key={i} className="h-16 rounded-xl bg-surface border border-slate-200 animate-pulse" />
             ))}
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-slate-200">
+          <div className="text-center py-16 bg-surface rounded-xl border border-slate-200">
             <Users className="h-10 w-10 mx-auto mb-3 text-slate-300" />
             <p className="font-semibold text-slate-700">Sin resultados</p>
           </div>
@@ -75,7 +75,7 @@ export default function AdminPacientesPage() {
               const cfg = STATUS_CFG[p.status] ?? STATUS_CFG.active;
               const isOpen = expanded === p.id;
               return (
-                <div key={p.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+                <div key={p.id} className="bg-surface rounded-xl border border-slate-200 overflow-hidden">
                   <button
                     onClick={() => setExpanded(isOpen ? null : p.id)}
                     className="w-full flex items-center gap-4 p-4 text-left hover:bg-slate-50 transition-colors"
@@ -119,9 +119,9 @@ export default function AdminPacientesPage() {
                       </div>
 
                       {p.clinical_history_summary && (
-                        <div className="bg-white rounded-lg border border-slate-200 p-3">
+                        <div className="bg-surface rounded-lg border border-slate-200 p-3">
                           <div className="flex items-center gap-2 mb-1">
-                            <FileText className="h-3.5 w-3.5 text-[#136dec]" />
+                            <FileText className="h-3.5 w-3.5 text-brand" />
                             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">
                               Resumen Historia Clínica
                             </p>

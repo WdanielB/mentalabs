@@ -20,7 +20,7 @@ interface ExamAttempt {
 const STATUS_CONFIG: Record<string, { label: string; icon: React.ElementType; color: string; bg: string }> = {
  pending: { label: "Pendiente", icon: Clock, color: "text-yellow-600", bg: "bg-yellow-50 " },
  in_progress: { label: "En Progreso", icon: PlayCircle, color: "text-blue-600", bg: "bg-blue-50 " },
- completed: { label: "Completado", icon: CheckCircle2, color: "text-[#0bda5e]", bg: "bg-green-50 " },
+ completed: { label: "Completado", icon: CheckCircle2, color: "text-accent", bg: "bg-green-50 " },
 };
 
 export default function PacienteExamenesPage() {
@@ -79,13 +79,13 @@ export default function PacienteExamenesPage() {
  {loading && (
  <div className="space-y-4">
  {Array.from({ length: 3 }).map((_, i) => (
- <div key={i} className="h-28 rounded-2xl bg-white border border-slate-200 animate-pulse" />
+ <div key={i} className="h-28 rounded-2xl bg-surface border border-slate-200 animate-pulse" />
  ))}
  </div>
  )}
 
  {!loading && attempts.length === 0 && (
- <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 ">
+ <div className="text-center py-20 bg-surface rounded-2xl border border-slate-200 ">
  <ClipboardList className="h-14 w-14 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-700 text-lg">Sin exámenes asignados</p>
  <p className="text-slate-400 text-sm mt-2">Tu especialista te asignará exámenes cuando los necesite.</p>
@@ -101,7 +101,7 @@ export default function PacienteExamenesPage() {
  const cfg = STATUS_CONFIG[a.status] ?? STATUS_CONFIG.pending;
  const StatusIcon = cfg.icon;
  return (
- <div key={a.id} className="flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+ <div key={a.id} className="flex items-center gap-5 p-5 bg-surface rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
  <div className={`h-12 w-12 rounded-xl ${cfg.bg} flex items-center justify-center shrink-0`}>
  <StatusIcon className={`h-6 w-6 ${cfg.color}`} />
  </div>
@@ -116,7 +116,7 @@ export default function PacienteExamenesPage() {
  </div>
  <Link
  href="/examen"
- className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20"
+ className="shrink-0 flex items-center gap-2 px-5 py-2.5 bg-brand text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-brand/20"
  >
  {a.status === "in_progress" ? "Continuar" : "Comenzar"}
  </Link>
@@ -133,9 +133,9 @@ export default function PacienteExamenesPage() {
  <h2 className="font-bold text-sm text-slate-400 uppercase tracking-wider mb-4">Completados</h2>
  <div className="space-y-3">
  {completed.map((a) => (
- <div key={a.id} className="flex items-center gap-5 p-5 bg-white rounded-2xl border border-slate-200 shadow-sm opacity-80">
+ <div key={a.id} className="flex items-center gap-5 p-5 bg-surface rounded-2xl border border-slate-200 shadow-sm opacity-80">
  <div className="h-10 w-10 rounded-xl bg-green-50 flex items-center justify-center shrink-0">
- <CheckCircle2 className="h-5 w-5 text-[#0bda5e]" />
+ <CheckCircle2 className="h-5 w-5 text-accent" />
  </div>
  <div className="flex-1 min-w-0">
  <p className="font-semibold text-sm">{a.exam_title}</p>
@@ -145,11 +145,11 @@ export default function PacienteExamenesPage() {
  </div>
  {a.total_score !== null && (
  <div className="text-right shrink-0">
- <p className="text-xl font-black text-[#136dec]">{a.total_score}</p>
+ <p className="text-xl font-black text-brand">{a.total_score}</p>
  <p className="text-xs text-slate-400">Score</p>
  </div>
  )}
- <Link href="/paciente/resultados" className="text-xs font-semibold text-[#136dec] hover:underline shrink-0">
+ <Link href="/paciente/resultados" className="text-xs font-semibold text-brand hover:underline shrink-0">
  Ver resultado
  </Link>
  </div>

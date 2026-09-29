@@ -62,7 +62,7 @@ function ExamFormModal({
 
  return (
  <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
- <div className="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+ <div className="w-full max-w-lg bg-surface rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
  <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 ">
  <h2 className="font-bold text-base">{initial ? "Editar Examen" : "Nuevo Examen"}</h2>
  <button onClick={onClose} className="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 "><X className="h-5 w-5" /></button>
@@ -72,19 +72,19 @@ function ExamFormModal({
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre del Examen *</label>
  <input type="text" autoFocus value={title} onChange={e => setTitle(e.target.value)} onKeyDown={e => e.key === "Enter" && handleSubmit()}
  placeholder="Ej. PHQ-9: Escala de Depresión"
- className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="w-full h-11 px-4 rounded-xl border border-slate-200 bg-slate-50 text-sm font-semibold outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  </div>
  <div className="grid grid-cols-2 gap-4">
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Batería</label>
  <input type="text" value={battery} onChange={e => setBattery(e.target.value)}
  placeholder="Ej. Batería TDAH"
- className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  </div>
  <div>
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Diagnóstico</label>
  <select value={dtype} onChange={e => setDtype(e.target.value)}
- className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all">
+ className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-slate-50 text-sm outline-none focus:ring-2 focus:ring-brand transition-all">
  <option value="">Sin clasificar</option>
  {DIAGNOSIS_TYPES.map(d => <option key={d} value={d}>{d}</option>)}
  </select>
@@ -94,13 +94,13 @@ function ExamFormModal({
  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Descripción / Instrucciones</label>
  <textarea rows={3} value={desc} onChange={e => setDesc(e.target.value)}
  placeholder="Instrucciones generales del examen, período de evaluación, etc."
- className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm resize-none outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="w-full px-3 py-2 rounded-xl border border-slate-200 bg-slate-50 text-sm resize-none outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  </div>
  </div>
  <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
  <button onClick={onClose} className="px-4 py-2 text-sm font-semibold text-slate-500 hover:text-slate-900 transition-colors">Cancelar</button>
  <button onClick={handleSubmit} disabled={!title.trim() || saving}
- className="px-5 py-2 bg-[#136dec] text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20 disabled:opacity-50">
+ className="px-5 py-2 bg-brand text-white rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-md shadow-brand/20 disabled:opacity-50">
  {saving ? "Guardando..." : initial ? "Guardar Cambios" : "Crear y Editar"}
  </button>
  </div>
@@ -193,7 +193,7 @@ export default function BancoPruebasPage() {
  const estimatedTime = (n: number) => `~${Math.max(1, Math.ceil(n * 1.5))} min`;
 
  return (
- <div className="min-h-screen bg-[#f5f5f5] text-[#1d2d3e] flex font-sans">
+ <div className="min-h-screen bg-canvas text-ink flex font-sans">
  <AdminSidebar />
  <main className="flex-1 lg:ml-64 p-6 lg:p-8" ref={menuRef}>
 
@@ -204,7 +204,7 @@ export default function BancoPruebasPage() {
  <p className="text-slate-500 text-sm mt-1">{loading ? "Cargando..." : `${exams.length} examen${exams.length !== 1 ? "es" : ""}`}</p>
  </div>
  <button onClick={() => setModal("create")}
- className="flex items-center gap-2 px-4 py-2.5 bg-[#136dec] hover:bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md shadow-[#136dec]/20 transition-all hover:scale-105 active:scale-95">
+ className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-blue-600 text-white rounded-xl font-bold text-sm shadow-md shadow-brand/20 transition-all hover:scale-105 active:scale-95">
  <Plus className="h-4 w-4" /> Nuevo Examen
  </button>
  </div>
@@ -214,18 +214,18 @@ export default function BancoPruebasPage() {
  <div className="relative">
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
  <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Buscar examen..."
- className="h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-[#136dec] focus:border-transparent outline-none transition-all w-48" />
+ className="h-9 pl-9 pr-3 rounded-xl border border-slate-200 bg-surface text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all w-48" />
  </div>
  <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
  {STATUS_FILTER.map(s => (
  <button key={s} onClick={() => setStatus(s)}
- className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${status === s ? "bg-white shadow-sm text-[#136dec]" : "text-slate-500 hover:text-slate-700 "}`}>
+ className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${status === s ? "bg-surface shadow-sm text-brand" : "text-slate-500 hover:text-slate-700 "}`}>
  {s}
  </button>
  ))}
  </div>
  <select value={dtFilter} onChange={e => setDtFilter(e.target.value)}
- className="h-9 px-3 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all">
+ className="h-9 px-3 rounded-xl border border-slate-200 bg-surface text-sm outline-none focus:ring-2 focus:ring-brand transition-all">
  <option value="">Todos los diagnósticos</option>
  {DIAGNOSIS_TYPES.map(d => <option key={d} value={d}>{d}</option>)}
  </select>
@@ -233,7 +233,7 @@ export default function BancoPruebasPage() {
 
  {loading && (
  <div className="space-y-4">
- {Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-32 rounded-2xl bg-white border border-slate-200 animate-pulse" />)}
+ {Array.from({ length: 2 }).map((_, i) => <div key={i} className="h-32 rounded-2xl bg-surface border border-slate-200 animate-pulse" />)}
  </div>
  )}
 
@@ -241,7 +241,7 @@ export default function BancoPruebasPage() {
  <div className="text-center py-20">
  <FileText className="h-12 w-12 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-500 text-lg">{search || dtFilter ? "Sin resultados" : "No hay exámenes aún"}</p>
- {!search && !dtFilter && <button onClick={() => setModal("create")} className="mt-4 text-sm font-semibold text-[#136dec] hover:underline">Crear el primer examen</button>}
+ {!search && !dtFilter && <button onClick={() => setModal("create")} className="mt-4 text-sm font-semibold text-brand hover:underline">Crear el primer examen</button>}
  </div>
  )}
 
@@ -256,13 +256,13 @@ export default function BancoPruebasPage() {
 
  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
  {items.map(exam => (
- <div key={exam.id} className="group relative bg-white rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all overflow-hidden">
- <div className={`h-1.5 w-full ${exam.is_published ? "bg-gradient-to-r from-[#0bda5e] to-[#136dec]" : "bg-slate-200 "}`} />
+ <div key={exam.id} className="group relative bg-surface rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-slate-300 transition-all overflow-hidden">
+ <div className={`h-1.5 w-full ${exam.is_published ? "bg-gradient-to-r from-accent to-brand" : "bg-slate-200 "}`} />
  <div className="p-5">
  {/* Badges */}
  <div className="flex flex-wrap gap-2 mb-3">
  {exam.meta.diagnosis_type && (
- <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-[#136dec] ">{exam.meta.diagnosis_type}</span>
+ <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-blue-100 text-brand ">{exam.meta.diagnosis_type}</span>
  )}
  <span className={`flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${exam.is_published ? "bg-green-100 text-green-700 " : "bg-slate-100 text-slate-500 "}`}>
  {exam.is_published ? <><Globe className="h-3 w-3" /> Publicado</> : <><Lock className="h-3 w-3" /> En Desarrollo</>}
@@ -272,7 +272,7 @@ export default function BancoPruebasPage() {
  {/* Title + menu */}
  <div className="flex items-start justify-between gap-2 mb-2">
  <Link href={`/admin/banco-pruebas/${exam.id}`} className="flex-1 min-w-0">
- <h3 className="font-bold text-base hover:text-[#136dec] transition-colors truncate">{exam.title}</h3>
+ <h3 className="font-bold text-base hover:text-brand transition-colors truncate">{exam.title}</h3>
  </Link>
  <div className="relative shrink-0">
  <button onClick={() => setMenuOpen(menuOpen === exam.id ? null : exam.id)}
@@ -280,7 +280,7 @@ export default function BancoPruebasPage() {
  <MoreVertical className="h-4 w-4" />
  </button>
  {menuOpen === exam.id && (
- <div className="absolute right-0 top-8 z-20 w-48 bg-white rounded-xl border border-slate-200 shadow-lg py-1">
+ <div className="absolute right-0 top-8 z-20 w-48 bg-surface rounded-xl border border-slate-200 shadow-lg py-1">
  <Link href={`/admin/banco-pruebas/${exam.id}`} className="flex items-center gap-2 px-4 py-2 text-sm hover:bg-slate-50 transition-colors">
  <Pencil className="h-4 w-4 text-slate-400" /> Editar preguntas
  </Link>

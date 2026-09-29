@@ -7,6 +7,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { listExams } from "../../../../actions/exams";
 
+import { parseExamMeta } from "../../../../lib/format";
 interface Exam {
  id: string;
  title: string;
@@ -28,7 +29,9 @@ export default function EspecialistaExamenesPage() {
  const data = await listExams({ onlyPublished: true });
  const enriched = data.map((e: any) => {
  const n = e.question_count ?? 0;
- return { ...e, estimated_time: `~${Math.max(1, Math.ceil(n * 1.5))} min` };
+ // Las baterías de juegos duran lo que duran los juegos, no 1,5 min por ítem.
+ const minutes = parseExamMeta(e.description).kind === "games" ? 15 : Math.max(1, Math.ceil(n * 1.5));
+ return { ...e, estimated_time: `~${minutes} min` };
  });
  setExams(enriched);
  setFiltered(enriched);
@@ -56,9 +59,9 @@ export default function EspecialistaExamenesPage() {
 
  {/* Info banner */}
  <div className="mb-6 flex items-start gap-3 p-4 bg-blue-50 rounded-xl border border-blue-200 ">
- <Globe className="h-5 w-5 text-[#136dec] shrink-0 mt-0.5" />
+ <Globe className="h-5 w-5 text-brand shrink-0 mt-0.5" />
  <div>
- <p className="text-sm font-semibold text-[#136dec]">Exámenes creados por el equipo clínico</p>
+ <p className="text-sm font-semibold text-brand">Exámenes creados por el equipo clínico</p>
  <p className="text-xs text-blue-600 mt-0.5">
  Asigna exámenes a tus pacientes desde{" "}
  <Link href="/especialista/pacientes" className="underline font-semibold">Mis Pacientes</Link>{" "}
@@ -72,19 +75,19 @@ export default function EspecialistaExamenesPage() {
  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
  <input type="text" value={search} onChange={e => setSearch(e.target.value)}
  placeholder="Buscar examen..."
- className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-[#136dec] focus:border-transparent outline-none transition-all" />
+ className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-surface text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all" />
  </div>
 
  {loading && (
  <div className="space-y-3">
  {Array.from({ length: 3 }).map((_, i) => (
- <div key={i} className="h-20 rounded-2xl bg-white border border-slate-200 animate-pulse" />
+ <div key={i} className="h-20 rounded-2xl bg-surface border border-slate-200 animate-pulse" />
  ))}
  </div>
  )}
 
  {!loading && filtered.length === 0 && (
- <div className="text-center py-20 bg-white rounded-2xl border border-slate-200 ">
+ <div className="text-center py-20 bg-surface rounded-2xl border border-slate-200 ">
  <FileText className="h-12 w-12 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-500 text-lg">
  {search ? "Sin resultados" : "No hay exámenes publicados aún"}
@@ -96,11 +99,11 @@ export default function EspecialistaExamenesPage() {
  {filtered.map(exam => {
  const isOpen = expanded.has(exam.id);
  return (
- <div key={exam.id} className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+ <div key={exam.id} className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
  <button onClick={() => toggle(exam.id)}
  className="w-full flex items-center gap-4 p-5 text-left hover:bg-slate-50 transition-colors">
  <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
- <FileText className="h-5 w-5 text-[#136dec]" />
+ <FileText className="h-5 w-5 text-brand" />
  </div>
  <div className="flex-1 min-w-0">
  <p className="font-bold text-sm">{exam.title}</p>
@@ -122,7 +125,7 @@ export default function EspecialistaExamenesPage() {
  <p className="text-sm text-slate-600 mt-4 mb-4 leading-relaxed">{exam.description}</p>
  )}
  <Link href="/especialista/pacientes"
- className="inline-flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-md shadow-[#136dec]/20">
+ className="inline-flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-xl text-sm font-bold hover:bg-blue-600 transition-colors shadow-md shadow-brand/20">
  <ClipboardList className="h-4 w-4" /> Ir a Mis Pacientes para asignar
  </Link>
  </div>

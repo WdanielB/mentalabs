@@ -1,517 +1,339 @@
-"use client";
-
 import Link from "next/link";
-import { useRef, useEffect } from "react";
-import { ArrowRight, Brain, Check, ChevronRight, Users, ClipboardList, Zap, Shield, BarChart3 } from "lucide-react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { ArrowRight, ArrowUpRight, CalendarDays, MapPin, Star, Video } from "lucide-react";
+import { SiteHeader } from "../components/site/SiteHeader";
+import { SiteFooter } from "../components/site/SiteFooter";
+import { LandingMotion } from "../components/site/LandingMotion";
+import { Faq } from "../components/site/Faq";
+import { Monogram } from "../components/site/Monogram";
+import { getPublicSpecialists } from "../lib/specialists";
+import { formatPEN } from "../lib/format";
 
-gsap.registerPlugin(ScrollTrigger);
+// El listado de especialistas cambia poco: se regenera cada 10 minutos.
+export const revalidate = 600;
 
-export default function LandingPage() {
- const heroRef = useRef<HTMLDivElement>(null);
- const featuresRef = useRef<HTMLDivElement>(null);
- const stepsRef = useRef<HTMLDivElement>(null);
- const ctaRef = useRef<HTMLDivElement>(null);
+const CONDITIONS = ["TDAH", "Autismo (TEA)", "Ansiedad", "Depresión", "Dislexia", "Duelo", "Estrés laboral", "Conducta", "Lenguaje", "Pareja"];
 
- useEffect(() => {
- const ctx = gsap.context(() => {
+const STEPS = [
+  {
+    title: "Encuentra a alguien que entienda tu caso",
+    body: "Filtra por lo que te preocupa, la edad de quien necesita ayuda y si prefieres sesiones online o presenciales. Todos los perfiles muestran su número de colegiatura.",
+  },
+  {
+    title: "Agenda sin llamadas ni esperas",
+    body: "Eliges un horario libre y queda reservado. El especialista recibe tu solicitud en su agenda y la confirma.",
+  },
+  {
+    title: "Evaluaciones desde casa",
+    body: "Tu especialista te asigna cuestionarios y juegos cognitivos que completas a tu ritmo. Los resultados le llegan ordenados antes de la sesión.",
+  },
+  {
+    title: "Seguimiento que se ve",
+    body: "Diario de ánimo, resultados y citas en un mismo lugar. Si eres padre o madre, ves el avance de tu hijo sin depender de un informe en papel.",
+  },
+];
 
- /* ── Hero entrance ── */
- const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
- tl.from(".hero-badge", { y: 20, opacity: 0, duration: 0.5 })
- .from(".hero-headline", { y: 50, opacity: 0, duration: 0.7 }, "-=0.2")
- .from(".hero-sub", { y: 30, opacity: 0, duration: 0.6 }, "-=0.4")
- .from(".hero-ctas", { y: 20, opacity: 0, duration: 0.5 }, "-=0.4")
- .from(".hero-visual", { x: 60, opacity: 0, duration: 0.8, ease: "power2.out" }, "-=0.8")
- .from(".hero-metric-1", { y: 20, opacity: 0, duration: 0.4 }, "-=0.3")
- .from(".hero-metric-2", { y: 20, opacity: 0, duration: 0.4 }, "-=0.2");
+const PRO_FEATURES = [
+  ["Agenda y horarios", "Define tu disponibilidad; las reservas del marketplace entran directo a tu calendario."],
+  ["Historia clínica firmada", "Registros por sesión con códigos de intervención y diagnóstico. Una vez firmados, no se editan."],
+  ["Banco de pruebas sin código", "Arma cuestionarios Likert, escalas visuales o texto libre y define reglas de puntaje por edad."],
+  ["Juegos cognitivos con métricas", "Memoria, atención sostenida y tiempo de reacción, medidos automáticamente en cada partida."],
+  ["Reportes en PDF", "Exporta resultados y evolución para el colegio, otro profesional o la familia."],
+  ["Vista para tutores", "Los padres ven el progreso de su hijo sin acceder a tus notas clínicas."],
+];
 
- /* ── Steps scroll reveal ── */
- gsap.utils.toArray<HTMLElement>(".step-card").forEach((el, i) => {
- gsap.from(el, {
- scrollTrigger: { trigger: el, start: "top 85%", toggleActions: "play none none reverse" },
- x: i % 2 === 0 ? -50 : 50,
- opacity: 0,
- duration: 0.7,
- ease: "power2.out",
- delay: i * 0.08,
- });
- });
+const PRIVACY = [
+  ["Cada rol ve solo lo suyo", "Las reglas de acceso viven en la base de datos, no solo en la pantalla: un paciente no puede leer datos de otro aunque lo intente."],
+  ["Tus notas no son públicas", "El perfil del especialista en el marketplace no expone correos ni teléfonos, y las historias clínicas nunca salen del panel."],
+  ["Sesión bajo tu control", "En una computadora compartida, desmarca “Mantener sesión” y se cerrará al cerrar el navegador o tras 30 minutos sin uso."],
+];
 
- /* ── Features reveal ── */
- gsap.from(".feat-item", {
- scrollTrigger: { trigger: featuresRef.current, start: "top 75%", toggleActions: "play none none reverse" },
- y: 40,
- opacity: 0,
- stagger: 0.1,
- duration: 0.6,
- ease: "power2.out",
- });
+const FAQ = [
+  {
+    q: "¿MentaLabs da diagnósticos automáticos?",
+    a: "No. Las evaluaciones ayudan al especialista a reunir información y detectar patrones, pero el diagnóstico siempre lo hace un profesional colegiado después de conocerte.",
+  },
+  {
+    q: "¿Cómo sé que el especialista está habilitado?",
+    a: "Cada perfil muestra su número de colegiatura (CPsP para psicólogos, CMP para médicos, CTMP para tecnólogos). Puedes verificarlo en el portal del colegio profesional correspondiente.",
+  },
+  {
+    q: "¿Cuánto cuesta?",
+    a: "Crear una cuenta es gratis. Cada especialista define su tarifa por sesión y la ves antes de agendar, sin cargos escondidos.",
+  },
+  {
+    q: "¿Sirve para niños?",
+    a: "Sí. Un padre, madre o tutor crea la cuenta, agenda las citas y sigue el progreso. Muchos especialistas atienden exclusivamente niños y adolescentes; puedes filtrarlos por edad.",
+  },
+  {
+    q: "¿Qué hago si es una emergencia?",
+    a: "MentaLabs no es un servicio de emergencias. Si tú o alguien cercano está en riesgo, llama a la Línea 113, opción 5, o acude a la emergencia más cercana.",
+  },
+];
 
- /* ── Stats counter ── */
- gsap.from(".stat-number", {
- scrollTrigger: { trigger: ".stats-section", start: "top 80%" },
- textContent: 0,
- duration: 1.5,
- ease: "power2.out",
- snap: { textContent: 1 },
- stagger: 0.15,
- });
+export default async function LandingPage() {
+  const specialists = await getPublicSpecialists({ limit: 4 });
+  const headline = "Entender cómo piensa tu hijo no debería tomar un año.";
 
- /* ── CTA ── */
- gsap.from(ctaRef.current, {
- scrollTrigger: { trigger: ctaRef.current, start: "top 80%" },
- y: 50,
- opacity: 0,
- duration: 0.8,
- ease: "power3.out",
- });
+  return (
+    <>
+      <SiteHeader />
+      <LandingMotion />
 
- });
+      <main id="contenido">
+        {/* ── Hero ── */}
+        <section className="hero relative overflow-hidden pb-20 pt-28 sm:pt-32 lg:pb-28 lg:pt-40">
+          <div className="mx-auto grid max-w-[1240px] items-center gap-14 px-4 sm:px-6 lg:grid-cols-[1.15fr_0.85fr] lg:gap-10 lg:px-10">
+            <div className="hero-copy min-w-0">
+              <p className="reveal mb-6 inline-flex items-center gap-2 text-sm text-muted">
+                <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+                Psicólogos y terapeutas colegiados en todo el Perú
+              </p>
+              <h1 className="font-display text-[clamp(2.6rem,6.4vw,5.4rem)] font-bold leading-[0.98] tracking-[-0.045em] text-ink">
+                {/* Un espacio real entre palabras: sin él no hay punto de corte y el titular desborda. */}
+                {headline.split(" ").map((w, i) => (
+                  <span key={i}>
+                    <span className="reveal-word">{w === "año." ? <span className="text-brand">{w}</span> : w}</span>{" "}
+                  </span>
+                ))}
+              </h1>
+              <p className="reveal mt-7 max-w-[34rem] text-lg leading-relaxed text-ink/75">
+                MentaLabs conecta a familias con especialistas en TDAH, autismo, ansiedad y más. Agenda, evalúa desde casa y sigue el
+                avance en un solo lugar.
+              </p>
+              <div className="reveal mt-9 flex flex-wrap items-center gap-3">
+                <Link
+                  href="/marketplace"
+                  className="group inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3.5 font-medium text-surface transition-colors hover:bg-brand-strong"
+                >
+                  Buscar especialista
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 ease-out-quart group-hover:translate-x-1" />
+                </Link>
+                <Link
+                  href="#profesionales"
+                  className="inline-flex items-center gap-2 rounded-full border border-ink/15 px-6 py-3.5 font-medium text-ink transition-colors hover:border-ink/40"
+                >
+                  Soy especialista
+                </Link>
+              </div>
+            </div>
 
- return () => ctx.revert();
- }, []);
+            {/* Composición: lo que ve una familia dentro de la app */}
+            <div className="hero-stack relative mx-auto h-[420px] w-full max-w-[440px] sm:h-[460px]" aria-hidden="true">
+              <div className="hero-card absolute left-0 top-0 w-[88%] -rotate-2 rounded-3xl bg-surface p-6 shadow-[0_30px_60px_-30px_oklch(0.27_0.09_290/0.35)] ring-1 ring-line">
+                <p className="text-xs uppercase tracking-[0.14em] text-muted">Próxima sesión</p>
+                <div className="mt-4 flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand font-display text-lg font-bold text-surface">LR</div>
+                  <div>
+                    <p className="font-display text-lg font-semibold leading-tight">Dra. Lucía Ramos</p>
+                    <p className="text-sm text-muted">Psicóloga clínica infantil</p>
+                  </div>
+                </div>
+                <div className="mt-5 flex items-center gap-4 text-sm text-ink/80">
+                  <span className="inline-flex items-center gap-1.5"><CalendarDays className="h-4 w-4 text-brand" /> Jueves 10:00</span>
+                  <span className="inline-flex items-center gap-1.5"><Video className="h-4 w-4 text-brand" /> Online</span>
+                </div>
+              </div>
 
- return (
- <div className="bg-white text-slate-900 overflow-x-hidden">
+              <div className="hero-card absolute right-0 top-[38%] w-[80%] rotate-[1.5deg] rounded-3xl bg-ink p-6 text-surface shadow-[0_30px_60px_-25px_oklch(0.24_0.025_285/0.5)]">
+                <p className="text-xs uppercase tracking-[0.14em] text-surface/55">Evaluación en curso</p>
+                <p className="mt-2 font-display text-lg font-semibold">Atención y concentración</p>
+                <div className="mt-5 h-2 overflow-hidden rounded-full bg-surface/15">
+                  <div className="hero-progress h-full w-[30%] origin-left rounded-full bg-aji" />
+                </div>
+                <p className="mt-2 text-sm text-surface/60">12 de 40 preguntas · se guarda solo</p>
+              </div>
 
- {/* ── Nav ── */}
- <nav className="fixed top-0 z-50 w-full border-b border-slate-100/80 bg-white/90 backdrop-blur-xl ">
- <div className="mx-auto flex h-18 max-w-7xl items-center justify-between px-6 lg:px-8">
- <Link href="/" className="flex items-center gap-2.5 group">
- <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#136dec] text-white transition-transform group-hover:scale-105">
- <Brain className="h-5 w-5" />
- </div>
- <span className="font-display text-lg font-700 tracking-tight">
- Menta<span className="text-[#0bda5e]">Labs</span>
- </span>
- </Link>
+              <div className="hero-card absolute bottom-0 left-[6%] w-[64%] -rotate-1 rounded-3xl bg-aji p-5 text-ink">
+                <p className="text-xs uppercase tracking-[0.14em] text-ink/60">Ánimo esta semana</p>
+                <div className="mt-3 flex items-end gap-2">
+                  {[3, 4, 2, 4, 5, 4, 5].map((v, i) => (
+                    <div key={i} className="flex flex-1 flex-col items-center gap-1.5">
+                      <div className="hero-mood w-full origin-bottom rounded-md bg-ink/85" style={{ height: `${v * 9}px` }} />
+                      <span className="text-[10px] text-ink/60">{"LMMJVSD"[i]}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
- <div className="hidden md:flex items-center gap-1">
- {[
- { label: "Soluciones", href: "/soluciones" },
- { label: "Cómo Funciona", href: "/como-funciona" },
- { label: "Studio", href: "/studio" },
- { label: "Especialistas", href: "/marketplace" },
- ].map(({ label, href }) => (
- <Link key={href} href={href}
- className="px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 rounded-lg hover:bg-slate-50 transition-all">
- {label}
- </Link>
- ))}
- </div>
+        {/* ── Franja de temas ── */}
+        <section aria-label="Temas que atendemos" className="overflow-hidden bg-brand py-6 text-surface">
+          <div className="animate-marquee flex w-max gap-10 whitespace-nowrap font-display text-[clamp(1.6rem,3.2vw,2.6rem)] font-semibold tracking-tight">
+            {[...CONDITIONS, ...CONDITIONS].map((c, i) => (
+              <span key={i} className="flex items-center gap-10" aria-hidden={i >= CONDITIONS.length}>
+                {c}
+                <span className="h-2.5 w-2.5 rounded-full bg-aji" aria-hidden="true" />
+              </span>
+            ))}
+          </div>
+        </section>
 
- <div className="flex items-center gap-3">
- <Link href="/login" className="hidden sm:block text-sm font-semibold text-slate-700 hover:text-[#136dec] transition-colors">
- Iniciar sesión
- </Link>
- <Link href="/registro"
- className="rounded-xl bg-[#136dec] px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-[#136dec]/25 hover:bg-blue-600 transition-all hover:scale-105 active:scale-95">
- Comenzar gratis
- </Link>
- </div>
- </div>
- </nav>
+        {/* ── Cómo funciona ── */}
+        <section id="como-funciona" className="scroll-mt-20 py-24 lg:py-36">
+          <div className="mx-auto grid max-w-[1240px] gap-14 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20 lg:px-10">
+            <div className="lg:sticky lg:top-32 lg:self-start">
+              <p className="reveal text-sm uppercase tracking-[0.14em] text-brand">Cómo funciona</p>
+              <h2 className="reveal mt-4 font-display text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[1.02] tracking-[-0.035em]">
+                De la primera duda al seguimiento, sin perder el hilo.
+              </h2>
+              <p className="reveal mt-6 max-w-md leading-relaxed text-muted">
+                La mayoría de familias pasa meses entre derivaciones, informes sueltos y listas de espera. Aquí todo queda en un mismo
+                historial.
+              </p>
+            </div>
 
- {/* ── Hero ── */}
- <section ref={heroRef} className="relative pt-32 pb-24 lg:pt-44 lg:pb-36 overflow-hidden">
- {/* Background grid */}
- <div className="absolute inset-0 -z-10"
- style={{ backgroundImage: "radial-gradient(circle at 1px 1px, oklch(0.85 0.01 240) 1px, transparent 0)", backgroundSize: "40px 40px" }}
- />
- <div className="absolute inset-0 -z-10 bg-gradient-to-b from-white via-white/80 to-transparent " />
- <div className="absolute -top-40 right-0 -z-10 h-[600px] w-[600px] rounded-full bg-[#136dec]/8 blur-3xl" />
- <div className="absolute -bottom-20 left-1/4 -z-10 h-[400px] w-[400px] rounded-full bg-[#0bda5e]/6 blur-3xl" />
+            <ol className="steps-list relative space-y-14 pl-14 sm:pl-20">
+              <span className="absolute bottom-3 left-[1.1rem] top-3 w-px bg-line sm:left-[1.6rem]" aria-hidden="true" />
+              <span className="steps-line absolute bottom-3 left-[1.1rem] top-3 w-px origin-top bg-brand sm:left-[1.6rem]" aria-hidden="true" />
+              {STEPS.map((s, i) => (
+                <li key={s.title} className="reveal relative">
+                  <span className="absolute -left-14 top-0 flex h-9 w-9 items-center justify-center rounded-full bg-canvas font-display text-sm font-bold text-brand ring-1 ring-brand sm:-left-20 sm:h-[3.25rem] sm:w-[3.25rem] sm:text-base">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="font-display text-2xl font-semibold tracking-tight sm:text-[1.7rem]">{s.title}</h3>
+                  <p className="mt-3 max-w-[56ch] leading-relaxed text-muted">{s.body}</p>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </section>
 
- <div className="mx-auto max-w-7xl px-6 lg:px-8">
- <div className="grid grid-cols-1 gap-16 lg:grid-cols-2 lg:gap-12 items-center">
- <div>
- <div className="hero-badge inline-flex items-center gap-2 rounded-full border border-[#136dec]/20 bg-[#136dec]/6 px-4 py-1.5 text-sm font-semibold text-[#136dec] mb-8">
- <span className="h-1.5 w-1.5 rounded-full bg-[#0bda5e] animate-pulse" />
- Plataforma Clínica Inteligente
- </div>
+        {/* ── Especialistas reales del directorio ── */}
+        {specialists.length > 0 && (
+          <section className="bg-band py-24 lg:py-32">
+            <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-10">
+              <div className="flex flex-wrap items-end justify-between gap-6">
+                <h2 className="reveal max-w-2xl font-display text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[1.02] tracking-[-0.035em]">
+                  Especialistas con nombre, colegiatura y tarifa a la vista.
+                </h2>
+                <Link href="/marketplace" className="reveal group inline-flex items-center gap-1.5 font-medium text-brand">
+                  Ver el directorio completo
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-300 ease-out-quart group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </div>
 
- <h1 className="hero-headline font-display text-5xl lg:text-6xl xl:text-7xl font-800 leading-[1.05] tracking-tight text-slate-900 mb-6">
- Diagnósticos que<br />
- <span className="text-[#136dec]">cambian vidas.</span>
- </h1>
+              <ul className="-mx-4 mt-14 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 scrollbar-hide sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
+                {specialists.map((s) => (
+                  <li key={s.id} className="reveal w-[78%] shrink-0 snap-start sm:w-auto">
+                    <Link
+                      href={`/marketplace?especialista=${s.id}`}
+                      className="group flex h-full flex-col rounded-3xl bg-surface p-6 ring-1 ring-line transition-shadow duration-300 hover:shadow-[0_24px_50px_-30px_oklch(0.27_0.09_290/0.45)]"
+                    >
+                      <Monogram id={s.id} name={s.full_name} />
+                      <p className="mt-5 font-display text-lg font-semibold leading-tight tracking-tight">{s.full_name}</p>
+                      <p className="mt-1 text-sm text-muted">{s.title ?? s.specialty}</p>
+                      <div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-sm text-ink/75">
+                        <span className="inline-flex items-center gap-1">
+                          <Star className="h-3.5 w-3.5 fill-aji text-aji" /> {s.rating.toFixed(1)}
+                          <span className="text-muted">({s.review_count})</span>
+                        </span>
+                        {s.city && (
+                          <span className="inline-flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5 text-muted" /> {s.city}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-auto pt-6 text-sm text-muted">
+                        <span className="font-display text-xl font-semibold text-ink">{formatPEN(s.hourly_rate)}</span> por sesión
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
 
- <p className="hero-sub text-lg lg:text-xl text-slate-600 leading-relaxed mb-10 max-w-xl">
- La plataforma completa para psicólogos y familias. Conecta evaluaciones clínicas, análisis diagnósticos y terapias interactivas en un solo lugar.
- </p>
+        {/* ── Profesionales ── */}
+        <section id="profesionales" className="scroll-mt-16 bg-brand-deep py-24 text-surface lg:py-36">
+          <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-10">
+            <div className="grid gap-10 lg:grid-cols-[1fr_1fr] lg:items-end">
+              <div>
+                <p className="reveal text-sm uppercase tracking-[0.14em] text-aji">Para psicólogos y terapeutas</p>
+                <h2 className="reveal mt-4 font-display text-[clamp(2.2rem,4.6vw,4rem)] font-bold leading-[1] tracking-[-0.04em]">
+                  Tu consulta entera, en vez de cinco herramientas sueltas.
+                </h2>
+              </div>
+              <p className="reveal max-w-md leading-relaxed text-surface/70 lg:justify-self-end">
+                Agenda, historia clínica, pruebas y reportes conectados. Menos tiempo pasando datos de una hoja a otra, más tiempo con tus
+                pacientes.
+              </p>
+            </div>
 
- <div className="hero-ctas flex flex-wrap items-center gap-4">
- <Link href="/registro"
- className="inline-flex items-center gap-2 rounded-2xl bg-[#136dec] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[#136dec]/30 hover:bg-blue-600 hover:-translate-y-0.5 transition-all">
- Empezar ahora <ArrowRight className="h-5 w-5" />
- </Link>
- <Link href="/marketplace"
- className="inline-flex items-center gap-2 text-base font-semibold text-slate-700 hover:text-[#136dec] transition-colors group">
- Buscar especialista
- <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
- </Link>
- </div>
+            <dl className="mt-16 grid gap-px overflow-hidden rounded-3xl bg-surface/10 sm:grid-cols-2 lg:grid-cols-3">
+              {PRO_FEATURES.map(([title, body], i) => (
+                <div key={title} className="reveal bg-brand-deep p-7 lg:p-8">
+                  <dt className="flex items-baseline gap-3 font-display text-xl font-semibold tracking-tight">
+                    <span className="text-sm font-medium text-aji">{String(i + 1).padStart(2, "0")}</span>
+                    {title}
+                  </dt>
+                  <dd className="mt-3 leading-relaxed text-surface/65">{body}</dd>
+                </div>
+              ))}
+            </dl>
 
- <div className="mt-10 flex items-center gap-6">
- {[
- "Evaluaciones validadas clínicamente",
- "Diagnóstico en minutos",
- "Privacidad garantizada",
- ].map((t) => (
- <div key={t} className="flex items-center gap-1.5 text-xs text-slate-500 ">
- <Check className="h-3.5 w-3.5 text-[#0bda5e] shrink-0" />
- {t}
- </div>
- ))}
- </div>
- </div>
+            <Link
+              href="/registro?rol=especialista"
+              className="reveal mt-12 inline-flex items-center gap-2 rounded-full bg-aji px-6 py-3.5 font-medium text-ink transition-colors hover:bg-surface"
+            >
+              Unirme como especialista <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
 
- {/* Hero Visual */}
- <div className="hero-visual relative">
- <div className="relative rounded-3xl border border-slate-200 bg-white p-5 shadow-2xl">
- <div className="rounded-2xl overflow-hidden bg-slate-50 p-4">
- {/* Mini dashboard mockup */}
- <div className="flex items-center gap-2 mb-4">
- <div className="h-2.5 w-2.5 rounded-full bg-red-400" />
- <div className="h-2.5 w-2.5 rounded-full bg-yellow-400" />
- <div className="h-2.5 w-2.5 rounded-full bg-green-400" />
- <div className="ml-2 text-xs text-slate-400 font-mono">Panel Diagnóstico</div>
- </div>
- <div className="space-y-3">
- <div className="h-2 w-2/3 rounded-full bg-gradient-to-r from-[#136dec] to-[#136dec]/40" />
- <div className="h-2 w-1/2 rounded-full bg-slate-200 " />
- <div className="mt-4 h-32 rounded-xl bg-gradient-to-br from-[#136dec]/10 to-[#0bda5e]/10 border border-[#136dec]/20 flex items-end p-3 gap-2">
- {[40, 65, 50, 80, 60, 95, 75].map((h, i) => (
- <div key={i} className="flex-1 rounded-t-md bg-[#136dec]/60" style={{ height: `${h}%` }} />
- ))}
- </div>
- <div className="grid grid-cols-3 gap-2">
- {["TDAH", "TEA", "Ansiedad"].map((label) => (
- <div key={label} className="rounded-lg bg-slate-100 p-2 text-center">
- <div className="text-xs font-semibold text-slate-600 ">{label}</div>
- </div>
- ))}
- </div>
- </div>
- </div>
- </div>
+        {/* ── Privacidad ── */}
+        <section className="py-24 lg:py-32">
+          <div className="mx-auto max-w-[1240px] px-4 sm:px-6 lg:px-10">
+            <h2 className="reveal max-w-3xl font-display text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[1.02] tracking-[-0.035em]">
+              Hablar de salud mental requiere confianza. Así cuidamos tus datos.
+            </h2>
+            <div className="mt-14 grid gap-10 md:grid-cols-3">
+              {PRIVACY.map(([title, body]) => (
+                <div key={title} className="reveal border-t-2 border-ink pt-6">
+                  <h3 className="font-display text-xl font-semibold tracking-tight">{title}</h3>
+                  <p className="mt-3 leading-relaxed text-muted">{body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
- {/* Floating metrics */}
- <div className="hero-metric-1 absolute -left-8 top-1/3 rounded-2xl bg-white border border-slate-200 shadow-xl px-4 py-3">
- <div className="text-2xl font-display font-800 text-[#0bda5e]">+40%</div>
- <div className="text-xs text-slate-500">diagnósticos más rápidos</div>
- </div>
- <div className="hero-metric-2 absolute -right-4 bottom-12 rounded-2xl bg-white border border-slate-200 shadow-xl px-4 py-3">
- <div className="flex items-center gap-2 mb-1">
- <div className="h-2 w-2 rounded-full bg-[#0bda5e] animate-pulse" />
- <span className="text-xs text-slate-500">Especialistas activos</span>
- </div>
- <div className="text-2xl font-display font-800">1,200+</div>
- </div>
- </div>
- </div>
- </div>
- </section>
+        {/* ── Preguntas ── */}
+        <section id="preguntas" className="scroll-mt-20 bg-surface py-24 lg:py-32">
+          <div className="mx-auto grid max-w-[1240px] gap-12 px-4 sm:px-6 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
+            <h2 className="reveal font-display text-[clamp(2rem,4vw,3.4rem)] font-bold leading-[1.02] tracking-[-0.035em]">
+              Preguntas que nos hacen seguido
+            </h2>
+            <div className="reveal">
+              <Faq items={FAQ} />
+            </div>
+          </div>
+        </section>
 
- {/* ── Stats ── */}
- <section className="stats-section py-16 border-y border-slate-100 ">
- <div className="mx-auto max-w-7xl px-6 lg:px-8">
- <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
- {[
- { num: "1200", suffix: "+", label: "Especialistas registrados" },
- { num: "8500", suffix: "+", label: "Evaluaciones completadas" },
- { num: "98", suffix: "%", label: "Precisión diagnóstica" },
- { num: "15", suffix: "min", label: "Tiempo medio de evaluación" },
- ].map(({ num, suffix, label }) => (
- <div key={label} className="text-center">
- <div className="font-display text-4xl lg:text-5xl font-800 text-slate-900 ">
- <span className="stat-number">{num}</span>
- <span className="text-[#136dec]">{suffix}</span>
- </div>
- <div className="mt-2 text-sm text-slate-500">{label}</div>
- </div>
- ))}
- </div>
- </div>
- </section>
+        {/* ── Cierre ── */}
+        <section className="py-24 lg:py-32">
+          <div className="mx-auto grid max-w-[1240px] gap-4 px-4 sm:px-6 md:grid-cols-2 lg:px-10">
+            <Link href="/marketplace" className="reveal group rounded-3xl bg-brand p-8 text-surface sm:p-10 lg:p-14">
+              <p className="text-sm uppercase tracking-[0.14em] text-surface/60">Busco ayuda</p>
+              <p className="mt-4 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+                Encuentra a tu especialista hoy
+              </p>
+              <ArrowRight className="mt-10 h-7 w-7 transition-transform duration-300 ease-out-quart group-hover:translate-x-2" />
+            </Link>
+            <Link href="/registro?rol=especialista" className="reveal group rounded-3xl bg-ink p-8 text-surface sm:p-10 lg:p-14">
+              <p className="text-sm uppercase tracking-[0.14em] text-surface/60">Soy especialista</p>
+              <p className="mt-4 font-display text-[clamp(1.8rem,3.4vw,2.8rem)] font-bold leading-[1.05] tracking-[-0.03em]">
+                Lleva tu consulta a MentaLabs
+              </p>
+              <ArrowRight className="mt-10 h-7 w-7 text-aji transition-transform duration-300 ease-out-quart group-hover:translate-x-2" />
+            </Link>
+          </div>
+        </section>
+      </main>
 
- {/* ── How it works ── */}
- <section ref={stepsRef} className="py-24 lg:py-32">
- <div className="mx-auto max-w-7xl px-6 lg:px-8">
- <div className="text-center mb-16">
- <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#136dec] mb-4">
- <span className="h-px w-8 bg-[#136dec]" />
- Proceso clínico
- <span className="h-px w-8 bg-[#136dec]" />
- </div>
- <h2 className="font-display text-4xl lg:text-5xl font-800 tracking-tight text-slate-900 ">
- Cómo funciona MentaLabs
- </h2>
- </div>
-
- <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
- {[
- {
- step: "01",
- title: "Registro y perfil clínico",
- desc: "El paciente o tutor completa su perfil. El especialista verifica historial y objetivos terapéuticos.",
- icon: Users,
- color: "text-[#136dec] bg-[#136dec]/8",
- },
- {
- step: "02",
- title: "Evaluación no-code",
- desc: "El especialista asigna baterías de pruebas personalizadas. El paciente las resuelve online a su ritmo.",
- icon: ClipboardList,
- color: "text-[#0bda5e] bg-[#0bda5e]/8",
- },
- {
- step: "03",
- title: "Diagnóstico y seguimiento",
- desc: "El sistema genera diagnósticos automáticos con recomendaciones. El tratamiento se monitoriza en tiempo real.",
- icon: BarChart3,
- color: "text-purple-600 bg-purple-50 ",
- },
- ].map(({ step, title, desc, icon: Icon, color }) => (
- <div key={step} className="step-card group relative p-8 rounded-3xl border border-slate-200 bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
- <div className="absolute top-6 right-6 font-display text-6xl font-800 text-slate-100 select-none">
- {step}
- </div>
- <div className={`h-12 w-12 rounded-2xl ${color} flex items-center justify-center mb-6`}>
- <Icon className="h-6 w-6" />
- </div>
- <h3 className="font-display text-xl font-700 text-slate-900 mb-3">{title}</h3>
- <p className="text-slate-500 leading-relaxed text-sm">{desc}</p>
- <Link href="/como-funciona" className="mt-6 inline-flex items-center gap-1.5 text-xs font-semibold text-[#136dec] opacity-0 group-hover:opacity-100 transition-opacity">
- Saber más <ChevronRight className="h-3.5 w-3.5" />
- </Link>
- </div>
- ))}
- </div>
- </div>
- </section>
-
- {/* ── Features ── */}
- <section ref={featuresRef} className="py-24 lg:py-32 bg-slate-50 ">
- <div className="mx-auto max-w-7xl px-6 lg:px-8">
- <div className="text-center mb-16">
- <h2 className="font-display text-4xl lg:text-5xl font-800 tracking-tight text-slate-900 mb-4">
- Tecnología al servicio de la clínica
- </h2>
- <p className="text-slate-500 max-w-2xl mx-auto">
- Herramientas diseñadas junto a psicólogos, psiquiatras y terapeutas ocupacionales.
- </p>
- </div>
-
- <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
- {[
- {
- icon: ClipboardList,
- title: "Constructor no-code",
- desc: "Crea evaluaciones complejas sin programar. Likert, VAS, juegos cognitivos y texto libre con plantillas clínicas.",
- accent: "#136dec",
- },
- {
- icon: BarChart3,
- title: "Reglas diagnósticas",
- desc: "Define umbrales por score y edad. El sistema genera diagnósticos con recomendaciones automáticas al instante.",
- accent: "#0bda5e",
- },
- {
- icon: Zap,
- title: "Juegos terapéuticos",
- desc: "Memoria, atención sostenida, tiempo de reacción y clasificación cognitiva. Métricas capturadas automáticamente.",
- accent: "#a855f7",
- },
- {
- icon: Shield,
- title: "Seguridad clínica",
- desc: "RBAC con 4 roles. Row Level Security en Supabase. Tutores, especialistas, pacientes y admins con vistas separadas.",
- accent: "#ef4444",
- },
- {
- icon: Users,
- title: "Conectividad familiar",
- desc: "Los tutores tienen vista de solo lectura del progreso. Notificaciones en tiempo real al completar evaluaciones.",
- accent: "#f59e0b",
- },
- {
- icon: Brain,
- title: "Espectro completo",
- desc: "TDAH, TEA, Ansiedad, Depresión, Dislexia y más. Baterías especializadas para adultos, adolescentes y niños.",
- accent: "#06b6d4",
- },
- ].map(({ icon: Icon, title, desc, accent }) => (
- <div key={title} className="feat-item group p-6 rounded-2xl bg-white border border-slate-200 hover:shadow-lg transition-all duration-300">
- <div className="mb-4 h-10 w-10 rounded-xl flex items-center justify-center" style={{ background: `${accent}15` }}>
- <Icon className="h-5 w-5" style={{ color: accent }} />
- </div>
- <h3 className="font-display font-700 text-slate-900 mb-2">{title}</h3>
- <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
- </div>
- ))}
- </div>
- </div>
- </section>
-
- {/* ── For who ── */}
- <section className="py-24 lg:py-32">
- <div className="mx-auto max-w-7xl px-6 lg:px-8">
- <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
- {[
- {
- tag: "Para especialistas",
- title: "Gestión clínica completa",
- points: [
- "Constructor no-code de evaluaciones",
- "Agenda y videoconferencias integradas",
- "Reportes con exportación PDF",
- "Motor de reglas diagnósticas automáticas",
- ],
- cta: { label: "Ver demo", href: "/registro" },
- bg: "bg-[#136dec]",
- tagColor: "bg-white/15 text-white",
- },
- {
- tag: "Para familias",
- title: "Acompañamiento transparente",
- points: [
- "Seguimiento del progreso en tiempo real",
- "Acceso a diagnósticos y recomendaciones",
- "Conexión directa con el especialista",
- "Juegos terapéuticos guiados",
- ],
- cta: { label: "Buscar especialista", href: "/marketplace" },
- bg: "bg-slate-900 ",
- tagColor: "bg-white/10 text-slate-300",
- },
- ].map(({ tag, title, points, cta, bg, tagColor }) => (
- <div key={tag} className={`${bg} rounded-3xl p-8 lg:p-10 text-white`}>
- <span className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-6 ${tagColor}`}>{tag}</span>
- <h3 className="font-display text-3xl font-800 mb-6">{title}</h3>
- <ul className="space-y-3 mb-8">
- {points.map((p) => (
- <li key={p} className="flex items-center gap-3 text-sm text-white/80">
- <Check className="h-4 w-4 text-[#0bda5e] shrink-0" />
- {p}
- </li>
- ))}
- </ul>
- <Link href={cta.href}
- className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-sm font-semibold transition-all">
- {cta.label} <ArrowRight className="h-4 w-4" />
- </Link>
- </div>
- ))}
- </div>
- </div>
- </section>
-
- {/* ── CTA ── */}
- <section ref={ctaRef} className="py-24 lg:py-32 bg-slate-50 ">
- <div className="mx-auto max-w-4xl px-6 lg:px-8 text-center">
- <div className="inline-flex items-center gap-2 text-sm font-semibold text-[#0bda5e] mb-6">
- <span className="h-2 w-2 rounded-full bg-[#0bda5e] animate-pulse" />
- Disponible ahora
- </div>
- <h2 className="font-display text-4xl lg:text-5xl xl:text-6xl font-800 tracking-tight text-slate-900 mb-6">
- Comienza tu evaluación<br />
- <span className="text-[#136dec]">hoy mismo.</span>
- </h2>
- <p className="text-lg text-slate-500 mb-10 max-w-2xl mx-auto">
- Crea tu cuenta en menos de 2 minutos. Sin tarjeta de crédito.
- </p>
- <div className="flex flex-wrap items-center justify-center gap-4">
- <Link href="/registro"
- className="inline-flex items-center gap-2 rounded-2xl bg-[#136dec] px-8 py-4 text-base font-bold text-white shadow-2xl shadow-[#136dec]/30 hover:bg-blue-600 hover:-translate-y-0.5 transition-all">
- Registrarse gratis <ArrowRight className="h-5 w-5" />
- </Link>
- <Link href="/marketplace"
- className="inline-flex items-center gap-2 px-8 py-4 text-base font-semibold text-slate-700 hover:text-[#136dec] transition-colors group">
- Explorar especialistas
- <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
- </Link>
- </div>
- </div>
- </section>
-
- {/* ── Footer ── */}
- <SiteFooter />
- </div>
- );
-}
-
-function SiteFooter() {
- return (
- <footer className="border-t border-slate-200 bg-white ">
- <div className="mx-auto max-w-7xl px-6 lg:px-8 py-16">
- <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
- {/* Brand */}
- <div className="col-span-2">
- <Link href="/" className="flex items-center gap-2.5 mb-4">
- <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#136dec] text-white">
- <Brain className="h-5 w-5" />
- </div>
- <span className="font-display text-lg font-700">Menta<span className="text-[#0bda5e]">Labs</span></span>
- </Link>
- <p className="text-sm text-slate-500 leading-relaxed max-w-xs">
- Plataforma clínica para diagnóstico y tratamiento de neurodivergencias. Conectamos familias con especialistas.
- </p>
- </div>
-
- {/* Links */}
- {[
- {
- title: "Plataforma",
- links: [
- { label: "Soluciones", href: "/soluciones" },
- { label: "Cómo Funciona", href: "/como-funciona" },
- { label: "Studio", href: "/studio" },
- { label: "Marketplace", href: "/marketplace" },
- ],
- },
- {
- title: "Cuenta",
- links: [
- { label: "Iniciar sesión", href: "/login" },
- { label: "Registrarse", href: "/registro" },
- ],
- },
- {
- title: "Diagnósticos",
- links: [
- { label: "TDAH", href: "/soluciones" },
- { label: "TEA", href: "/soluciones" },
- { label: "Ansiedad", href: "/soluciones" },
- { label: "Depresión", href: "/soluciones" },
- ],
- },
- ].map(({ title, links }) => (
- <div key={title}>
- <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 mb-4">{title}</h3>
- <ul className="space-y-3">
- {links.map(({ label, href }) => (
- <li key={label}>
- <Link href={href} className="text-sm text-slate-500 hover:text-[#136dec] transition-colors">
- {label}
- </Link>
- </li>
- ))}
- </ul>
- </div>
- ))}
- </div>
-
- <div className="mt-12 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
- <p className="text-xs text-slate-400">© {new Date().getFullYear()} MentaLabs. Todos los derechos reservados.</p>
- <div className="flex items-center gap-6">
- {["Privacidad", "Términos", "Cookies"].map((t) => (
- <Link key={t} href="#" className="text-xs text-slate-400 hover:text-slate-700 transition-colors">{t}</Link>
- ))}
- </div>
- </div>
- </div>
- </footer>
- );
+      <SiteFooter />
+    </>
+  );
 }

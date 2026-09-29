@@ -83,7 +83,7 @@ export default function TutorAgendaPage() {
  const isUpcoming = isFuture(parseISO(appt.start_time)) && appt.status !== "cancelled";
  return (
  <div
- className={`flex items-center gap-4 p-4 bg-white rounded-xl border border-slate-200 ${
+ className={`flex items-center gap-4 p-4 bg-surface rounded-xl border border-slate-200 ${
  !isUpcoming ? "opacity-60" : ""
  }`}
  >
@@ -130,14 +130,14 @@ export default function TutorAgendaPage() {
  {Array.from({ length: 3 }).map((_, i) => (
  <div
  key={i}
- className="h-20 rounded-xl bg-white border border-slate-200 animate-pulse"
+ className="h-20 rounded-xl bg-surface border border-slate-200 animate-pulse"
  />
  ))}
  </div>
  )}
 
  {!loading && appointments.length === 0 && (
- <div className="text-center py-16 bg-white rounded-xl border border-slate-200 ">
+ <div className="text-center py-16 bg-surface rounded-xl border border-slate-200 ">
  <Calendar className="h-10 w-10 mx-auto mb-3 text-slate-300 " />
  <p className="font-semibold text-slate-700 ">Sin citas registradas</p>
  <p className="text-slate-400 text-sm mt-1">

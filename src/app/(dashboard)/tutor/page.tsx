@@ -1,266 +1,254 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
-import {
-  Users, ChevronRight, ClipboardList, AlertCircle, BarChart3, Calendar,
-} from "lucide-react";
+import { useEffect, useState } from "react";
+import { ArrowRight, CalendarDays, ClipboardCheck, FileSignature, Plus, Search, Stethoscope } from "lucide-react";
 import { createClient } from "../../../../utils/supabase/client";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { useFamily } from "../../../lib/family/FamilyContext";
+import { ageLabel, displayScore, firstName, formatDateLima, parseExamMeta, type ExamMeta } from "../../../lib/format";
 
-interface LinkedPatient {
-  id: string;
-  full_name: string;
-  email: string;
-  status: string;
-  pendingExams: number;
-  lastScore: number | null;
-  lastExamTitle: string | null;
+interface Appointment { id: string; start_time: string; status: string; attention_type: string | null; specialist: string }
+interface Attempt {
+  id: string; status: string; total_score: number | null; assigned_at: string; completed_at: string | null;
+  title: string; meta: ExamMeta; subcategory: string | null; recommendations: string[];
 }
+interface Report { id: string; signed_at: string; specialist: string; session: string | null; reason: string | null; plan: string | null; codes: string[] }
 
-const STATUS: Record<string, { label: string; dot: string; text: string }> = {
-  active:       { label: "Activo",         dot: "bg-[#107e3e]", text: "text-[#107e3e]" },
-  inactive:     { label: "Inactivo",       dot: "bg-[#6a6a6a]", text: "text-[#6a6a6a]" },
-  in_treatment: { label: "En tratamiento", dot: "bg-[#0070f2]", text: "text-[#0070f2]" },
-};
+type Event = { at: string; kind: "cita" | "evaluacion" | "informe" | "proxima"; title: string; detail: string };
 
 export default function TutorHomePage() {
-  const [profileName, setProfileName] = useState("");
-  const [patients, setPatients] = useState<LinkedPatient[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { active, loading: familyLoading, children } = useFamily();
+  const [data, setData] = useState<{ appts: Appointment[]; attempts: Attempt[]; reports: Report[] } | null>(null);
 
   useEffect(() => {
-    const load = async () => {
+    if (!active) return;
+    let alive = true;
+    setData(null);
+    (async () => {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: prof } = await supabase
-        .from("profiles").select("full_name").eq("id", user.id).single();
-      if (prof) setProfileName(prof.full_name);
-
-      const { data: links } = await supabase
-        .from("tutor_patient_links")
-        .select(`patient_id, patients!inner(id, status, profiles!inner(full_name, email))`)
-        .eq("tutor_id", user.id);
-
-      if (!links || links.length === 0) {
-        setLoading(false);
-        return;
-      }
-
-      const patientIds = links.map((l: any) => l.patient_id);
-
-      const { data: pending } = await supabase
-        .from("exam_attempts").select("patient_id")
-        .in("patient_id", patientIds).eq("status", "pending");
-
-      const { data: completed } = await supabase
-        .from("exam_attempts")
-        .select(`patient_id, total_score, exams!inner(title)`)
-        .in("patient_id", patientIds).eq("status", "completed")
-        .order("completed_at", { ascending: false });
-
-      const pendingMap: Record<string, number> = {};
-      pending?.forEach((p: any) => {
-        pendingMap[p.patient_id] = (pendingMap[p.patient_id] ?? 0) + 1;
+      const [{ data: appts }, { data: attempts }, { data: records }] = await Promise.all([
+        supabase
+          .from("appointments")
+          .select("id, start_time, status, attention_type, specialists(display_name)")
+          .eq("patient_id", active.id)
+          .order("start_time"),
+        supabase
+          .from("exam_attempts")
+          .select("id, status, total_score, assigned_at, completed_at, exams(title, description), diagnostics(generated_subcategory, recommendations)")
+          .eq("patient_id", active.id)
+          .order("assigned_at"),
+        supabase
+          .from("clinical_records")
+          .select("id, signed_at, consultation_reason, treatment_plan, diagnostic_codes, specialists(display_name), appointments(attention_type)")
+          .eq("patient_id", active.id)
+          .eq("status", "signed_and_locked")
+          .order("signed_at"),
+      ]);
+      if (!alive) return;
+      setData({
+        appts: (appts ?? []).map((a: any) => ({ ...a, specialist: a.specialists?.display_name ?? "Especialista" })),
+        attempts: (attempts ?? []).map((a: any) => ({
+          id: a.id, status: a.status, total_score: a.total_score, assigned_at: a.assigned_at, completed_at: a.completed_at,
+          title: a.exams?.title ?? "Evaluación", meta: parseExamMeta(a.exams?.description),
+          subcategory: a.diagnostics?.[0]?.generated_subcategory ?? null,
+          recommendations: a.diagnostics?.[0]?.recommendations ?? [],
+        })),
+        reports: (records ?? []).map((r: any) => ({
+          id: r.id, signed_at: r.signed_at, specialist: r.specialists?.display_name ?? "Especialista",
+          session: (Array.isArray(r.appointments) ? r.appointments[0] : r.appointments)?.attention_type ?? null,
+          reason: r.consultation_reason, plan: r.treatment_plan, codes: r.diagnostic_codes ?? [],
+        })),
       });
+    })();
+    return () => { alive = false; };
+  }, [active]);
 
-      const latestExamMap: Record<string, { score: number; title: string }> = {};
-      completed?.forEach((c: any) => {
-        if (!latestExamMap[c.patient_id]) {
-          latestExamMap[c.patient_id] = { score: c.total_score, title: c.exams?.title };
-        }
-      });
+  if (familyLoading) return <div className="p-8"><div className="h-40 animate-pulse rounded-3xl bg-band" /></div>;
 
-      setPatients(links.map((l: any) => ({
-        id: l.patients.id,
-        full_name: l.patients.profiles?.full_name ?? "Paciente",
-        email: l.patients.profiles?.email ?? "",
-        status: l.patients.status ?? "active",
-        pendingExams: pendingMap[l.patient_id] ?? 0,
-        lastScore: latestExamMap[l.patient_id]?.score ?? null,
-        lastExamTitle: latestExamMap[l.patient_id]?.title ?? null,
-      })));
+  if (!active) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 text-center">
+        <h1 className="font-display text-3xl font-bold tracking-[-0.03em]">Empecemos por tu hijo o hija</h1>
+        <p className="mt-3 text-muted">Regístralo una sola vez y gestiona sus citas y evaluaciones desde tu cuenta.</p>
+        <Link href="/tutor/familia" className="mt-8 inline-flex items-center gap-2 rounded-full bg-brand px-6 py-3 font-medium text-surface">
+          <Plus className="h-4 w-4" /> Registrar a mi hijo
+        </Link>
+      </div>
+    );
+  }
 
-      setLoading(false);
-    };
-    load();
-  }, []);
+  const name = firstName(active.full_name);
+  const now = Date.now();
+  const next = data?.appts.find((a) => new Date(a.start_time).getTime() > now && a.status !== "cancelled");
+  const todo = data?.attempts.filter((a) => a.status !== "completed" && a.meta.respondent !== "especialista") ?? [];
+  const done = data?.attempts.filter((a) => a.status === "completed") ?? [];
 
-  const totalPending = patients.reduce((s, p) => s + p.pendingExams, 0);
+  const events: Event[] = data
+    ? [
+        ...data.appts.map<Event>((a) => {
+          const day = a.start_time.slice(0, 10);
+          const signed = data.reports.some((r) => r.signed_at.slice(0, 10) === day);
+          return {
+            at: a.start_time,
+            kind: new Date(a.start_time).getTime() > now ? "proxima" : signed ? "informe" : "cita",
+            title: a.attention_type ?? "Consulta",
+            detail: signed ? `${a.specialist} · informe firmado` : a.specialist,
+          };
+        }),
+        ...done
+          .filter((a) => a.meta.kind !== "games") // la batería ya aparece como la sesión de evaluación
+          .map<Event>((a) => ({ at: a.completed_at!, kind: "evaluacion", title: a.title.split(" · ")[0], detail: a.subcategory ?? "Completada" })),
+      ].sort((a, b) => a.at.localeCompare(b.at))
+    : [];
 
   return (
-    <div>
-      {/* Toolbar */}
-      <div className="bg-white border-b border-[#d9d9d9] px-6 py-3">
-        <div className="flex items-center gap-1.5 text-xs text-[#6a6a6a] mb-0.5">
-          <span>MentaLabs</span>
-          <ChevronRight className="h-3 w-3" />
-          <span className="font-medium text-[#1d2d3e]">Inicio</span>
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-8 lg:py-12">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-muted">{children.length > 1 ? "Perfil activo" : "Tu hijo"}</p>
+          <h1 className="font-display text-[clamp(2rem,4vw,2.8rem)] font-bold leading-none tracking-[-0.035em]">{active.full_name}</h1>
+          <p className="mt-2 text-muted">{ageLabel(active.birth_date)}</p>
         </div>
-        {loading ? (
-          <div className="h-5 w-44 bg-[#f2f4f7] animate-pulse" />
-        ) : (
-          <h1 className="text-base font-bold text-[#1d2d3e]">
-            Panel de {profileName.split(" ")[0] || "Tutor"}
-          </h1>
-        )}
-        <p className="text-xs text-[#6a6a6a] mt-0.5">
-          {format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}
-        </p>
-      </div>
+        <Link href={`/marketplace?para=${active.id}`} className="inline-flex items-center gap-2 rounded-full border border-line bg-surface px-4 py-2 text-sm hover:border-ink/40">
+          <Search className="h-4 w-4" /> Buscar especialista para {name}
+        </Link>
+      </header>
 
-      <div className="p-6 space-y-6">
-        {/* KPI Tiles */}
-        <section>
-          <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider mb-2">Resumen General</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#d9d9d9] border border-[#d9d9d9]">
-            <div className="bg-white px-5 py-4 flex items-center gap-4">
-              <div className="h-10 w-10 bg-[#eaf1fb] flex items-center justify-center shrink-0">
-                <Users className="h-5 w-5 text-[#0070f2]" />
-              </div>
-              <div>
-                {loading ? <div className="h-8 w-10 bg-[#f2f4f7] animate-pulse mb-1" /> : (
-                  <p className="text-3xl font-bold text-[#1d2d3e]">{patients.length}</p>
-                )}
-                <p className="text-xs text-[#6a6a6a] font-medium">Pacientes Vinculados</p>
-              </div>
-            </div>
-            <div className="bg-white px-5 py-4 flex items-center gap-4">
-              <div className="h-10 w-10 bg-[#fff8f1] flex items-center justify-center shrink-0">
-                <ClipboardList className="h-5 w-5 text-[#e9730c]" />
-              </div>
-              <div>
-                {loading ? <div className="h-8 w-10 bg-[#f2f4f7] animate-pulse mb-1" /> : (
-                  <p className="text-3xl font-bold text-[#1d2d3e]">{totalPending}</p>
-                )}
-                <p className="text-xs text-[#6a6a6a] font-medium">Examenes Pendientes (total)</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Patient Table */}
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider">Mis Pacientes</p>
-            <Link href="/tutor/pacientes" className="text-[11px] font-semibold text-[#0070f2] flex items-center gap-1 hover:underline">
-              Ver detalle <ChevronRight className="h-3 w-3" />
-            </Link>
-          </div>
-          <div className="border border-[#d9d9d9] bg-white overflow-hidden">
-            {loading && (
-              <div className="p-4 space-y-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="h-14 bg-[#f2f4f7] animate-pulse" />
+      <div className="mt-10 grid gap-8 lg:grid-cols-[1.35fr_1fr]">
+        <div className="space-y-8">
+          {/* Por hacer */}
+          <section aria-labelledby="pendientes">
+            <h2 id="pendientes" className="text-xs font-medium uppercase tracking-[0.14em] text-muted">Por hacer</h2>
+            {!data ? (
+              <div className="mt-3 h-20 animate-pulse rounded-2xl bg-band" />
+            ) : todo.length === 0 ? (
+              <p className="mt-3 rounded-2xl bg-surface px-5 py-4 text-sm text-muted ring-1 ring-line">No hay cuestionarios pendientes para {name}.</p>
+            ) : (
+              <ul className="mt-3 space-y-2">
+                {todo.map((a) => (
+                  <li key={a.id} className="flex flex-wrap items-center gap-4 rounded-2xl bg-surface px-5 py-4 ring-1 ring-brand/40">
+                    <ClipboardCheck className="h-5 w-5 text-brand" aria-hidden="true" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{a.title}</p>
+                      <p className="text-sm text-muted">
+                        {a.meta.kind === "games" ? `Para que juegue ${name} (unos 15 min)` : `Lo respondes tú sobre ${name}`} · asignado el {formatDateLima(a.assigned_at)}
+                      </p>
+                    </div>
+                    <Link href={`/examen?attempt=${a.id}`} className="inline-flex items-center gap-1.5 rounded-full bg-brand px-4 py-2 text-sm font-medium text-surface hover:bg-brand-strong">
+                      {a.meta.kind === "games" ? "Abrir juegos" : "Responder"} <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </li>
                 ))}
-              </div>
+              </ul>
             )}
-            {!loading && patients.length === 0 && (
-              <div className="px-6 py-14 text-center">
-                <Users className="h-10 w-10 mx-auto mb-3 text-[#d9d9d9]" />
-                <p className="font-semibold text-sm text-[#1d2d3e]">Sin pacientes vinculados</p>
-                <p className="text-[#6a6a6a] text-xs mt-1">
-                  Contacta a un especialista para vincular a tus pacientes.
-                </p>
-              </div>
-            )}
-            {patients.length > 0 && (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="bg-[#f2f4f7] border-b border-[#d9d9d9]">
-                    <th className="px-5 py-2.5 text-left text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider">
-                      Paciente
-                    </th>
-                    <th className="px-4 py-2.5 text-left text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider hidden sm:table-cell">
-                      Ultimo Examen
-                    </th>
-                    <th className="px-4 py-2.5 text-left text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider">
-                      Pendientes
-                    </th>
-                    <th className="px-4 py-2.5 text-left text-[10px] font-bold text-[#6a6a6a] uppercase tracking-wider">
-                      Estado
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#e8e8e8]">
-                  {patients.map((p) => {
-                    const st = STATUS[p.status] ?? STATUS.active;
-                    return (
-                      <tr key={p.id} className="hover:bg-[#f5f5f5] transition-colors">
-                        <td className="px-5 py-3.5">
-                          <div className="flex items-center gap-3">
-                            <div className="h-7 w-7 bg-[#1d2d3e] flex items-center justify-center text-white text-xs font-bold shrink-0">
-                              {p.full_name.charAt(0).toUpperCase()}
-                            </div>
-                            <div>
-                              <p className="font-semibold text-sm text-[#1d2d3e]">{p.full_name}</p>
-                              <p className="text-[10px] text-[#6a6a6a]">{p.email}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3.5 hidden sm:table-cell">
-                          {p.lastExamTitle ? (
-                            <div>
-                              <p className="text-xs text-[#1d2d3e] truncate max-w-[180px]">{p.lastExamTitle}</p>
-                              {p.lastScore !== null && (
-                                <p className="text-[10px] text-[#6a6a6a]">Score: {p.lastScore}</p>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-xs text-[#6a6a6a]">Sin examenes</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3.5">
-                          {p.pendingExams > 0 ? (
-                            <span className="flex items-center gap-1.5 text-xs font-semibold text-[#e9730c]">
-                              <AlertCircle className="h-3.5 w-3.5" />
-                              {p.pendingExams}
-                            </span>
-                          ) : (
-                            <span className="text-xs text-[#6a6a6a]">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3.5">
-                          <span className={`flex items-center gap-1.5 text-xs font-medium ${st.text}`}>
-                            <span className={`h-1.5 w-1.5 rounded-full ${st.dot}`} />
-                            {st.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
+          </section>
 
-        {/* Quick Links */}
-        <section>
-          <p className="text-[11px] font-bold text-[#6a6a6a] uppercase tracking-wider mb-2">Acceso Rapido</p>
-          <div className="border border-[#d9d9d9] bg-white divide-y divide-[#e8e8e8]">
-            {[
-              { href: "/tutor/pacientes", icon: Users,     label: "Ver Pacientes" },
-              { href: "/tutor/agenda",    icon: Calendar,  label: "Ver Agenda" },
-              { href: "/tutor/reportes",  icon: BarChart3, label: "Ver Reportes" },
-            ].map(({ href, icon: Icon, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className="flex items-center justify-between px-5 py-3.5 hover:bg-[#f5f5f5] transition-colors group"
-              >
-                <div className="flex items-center gap-3">
-                  <Icon className="h-4 w-4 text-[#0070f2]" />
-                  <span className="font-medium text-sm text-[#1d2d3e]">{label}</span>
-                </div>
-                <ChevronRight className="h-4 w-4 text-[#6a6a6a] group-hover:text-[#0070f2] transition-colors" />
+          {/* Resultados */}
+          <section aria-labelledby="resultados">
+            <h2 id="resultados" className="text-xs font-medium uppercase tracking-[0.14em] text-muted">Resultados de evaluaciones</h2>
+            {data && done.length === 0 && <p className="mt-3 text-sm text-muted">Aún no hay resultados.</p>}
+            <ul className="mt-3 space-y-3">
+              {done.map((a) => (
+                <li key={a.id} className="rounded-2xl bg-surface p-5 ring-1 ring-line">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium">{a.title}</p>
+                      <p className="text-sm text-muted">
+                        {a.meta.respondent === "especialista" ? "Aplicado por el especialista" : a.meta.kind === "games" ? `Jugado por ${name}` : "Respondido por ti"} · {formatDateLima(a.completed_at!)}
+                      </p>
+                    </div>
+                    {a.meta.kind === "games" ? (
+                      <p className="text-sm text-muted">Juegos completados</p>
+                    ) : (
+                      <p className="font-display text-2xl font-semibold tabular-nums">{displayScore(a.total_score, a.meta)}</p>
+                    )}
+                  </div>
+                  {a.subcategory && <p className="mt-3 inline-block rounded-full bg-warn-soft px-3 py-1 text-sm font-medium text-warn">{a.subcategory}</p>}
+                  {a.recommendations.length > 0 && (
+                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-ink/80">
+                      {a.recommendations.map((r) => <li key={r}>{r}</li>)}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+            {done.length > 0 && (
+              <p className="mt-3 text-xs text-muted">Son pruebas de tamizaje y observación: orientan al especialista, pero el diagnóstico lo da él en consulta.</p>
+            )}
+          </section>
+
+          {/* Informes */}
+          <section aria-labelledby="informes">
+            <h2 id="informes" className="text-xs font-medium uppercase tracking-[0.14em] text-muted">Informes del especialista</h2>
+            {data && data.reports.length === 0 && <p className="mt-3 text-sm text-muted">Los informes aparecerán aquí cuando el especialista los firme.</p>}
+            <ul className="mt-3 space-y-3">
+              {data?.reports.map((r) => (
+                <li key={r.id}>
+                  <details className="group rounded-2xl bg-surface ring-1 ring-line open:ring-brand/40">
+                    <summary className="flex cursor-pointer list-none items-center gap-4 p-5">
+                      <FileSignature className="h-5 w-5 text-ok" aria-hidden="true" />
+                      <span className="min-w-0 flex-1">
+                        <span className="block font-medium">{r.session ?? "Informe"} · {formatDateLima(r.signed_at)}</span>
+                        <span className="block text-sm text-muted">Firmado por {r.specialist}</span>
+                      </span>
+                      <span className="text-sm text-brand group-open:hidden">Leer</span>
+                    </summary>
+                    <div className="space-y-3 border-t border-line px-5 py-4 text-sm leading-relaxed">
+                      {r.reason && <p><strong className="font-medium">Motivo:</strong> {r.reason}</p>}
+                      {r.plan && <p><strong className="font-medium">Plan:</strong> {r.plan}</p>}
+                      {r.codes.length > 0 && <p className="text-muted">Códigos CIE-10: {r.codes.join(", ")}</p>}
+                    </div>
+                  </details>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+
+        <aside className="space-y-8">
+          {next ? (
+            <div className="rounded-3xl bg-brand p-6 text-surface">
+              <p className="text-xs uppercase tracking-[0.14em] text-surface/60">Próxima cita</p>
+              <p className="mt-3 font-display text-2xl font-semibold first-letter:uppercase">
+                {formatDateLima(next.start_time, { weekday: "long", day: "numeric", month: "long" })}
+              </p>
+              <p className="mt-1 text-surface/80">
+                {formatDateLima(next.start_time, { hour: "2-digit", minute: "2-digit" })} · {next.attention_type ?? "Consulta"}
+              </p>
+              <p className="mt-4 flex items-center gap-2 text-sm text-surface/80"><Stethoscope className="h-4 w-4" /> {next.specialist}</p>
+            </div>
+          ) : (
+            data && (
+              <Link href={`/marketplace?para=${active.id}`} className="block rounded-3xl border border-dashed border-brand/50 p-6 text-brand-strong hover:bg-brand-soft">
+                <CalendarDays className="h-5 w-5" />
+                <p className="mt-3 font-medium">Sin citas próximas</p>
+                <p className="text-sm">Agenda con un especialista</p>
               </Link>
-            ))}
-          </div>
-        </section>
+            )
+          )}
+
+          {/* Recorrido: cómo avanza el caso */}
+          <section aria-labelledby="recorrido">
+            <h2 id="recorrido" className="text-xs font-medium uppercase tracking-[0.14em] text-muted">Recorrido de {name}</h2>
+            {events.length > 0 && (
+              <ol className="relative mt-4 space-y-5 border-l border-line pl-6">
+                {events.map((e, i) => (
+                  <li key={i} className="relative">
+                    <span
+                      className={`absolute -left-[1.95rem] top-1 h-3 w-3 rounded-full ring-4 ring-canvas ${
+                        e.kind === "proxima" ? "bg-aji" : e.kind === "informe" ? "bg-ok" : e.kind === "evaluacion" ? "bg-brand" : "bg-ink/60"
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <p className="text-xs text-muted">{formatDateLima(e.at, { day: "numeric", month: "short" })}{e.kind === "proxima" && " · próxima"}</p>
+                    <p className="text-sm font-medium">{e.title}</p>
+                    <p className="text-sm text-muted">{e.detail}</p>
+                  </li>
+                ))}
+              </ol>
+            )}
+          </section>
+        </aside>
       </div>
     </div>
   );

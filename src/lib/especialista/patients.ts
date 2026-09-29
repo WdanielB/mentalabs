@@ -1,7 +1,4 @@
-import { unstable_cache } from 'next/cache';
 import { createClient } from '../../../utils/supabase/server';
-import { createAdminClient } from '../../../utils/supabase/admin';
-import { CACHE_TAGS } from '../cache/tags';
 
 export class AuthError extends Error { readonly type = 'auth' as const }
 export class NetworkError extends Error { readonly type = 'network' as const }
@@ -17,9 +14,12 @@ export type SafePatient = {
   lastScore: number | null
 }
 
-const _cachedSpecialistPatients = unstable_cache(
-  async (specialistId: string): Promise<{ patients: SafePatient[]; specialistId: string }> => {
-    const supabase = createAdminClient();
+// Se consulta como el especialista: RLS limita a sus pacientes. Antes usaba la
+// service role dentro de unstable_cache (y fallaba sin esa clave).
+async function loadSpecialistPatients(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  specialistId: string
+): Promise<{ patients: SafePatient[]; specialistId: string }> {
 
     const [assignRes, apptRes, examRes] = await Promise.all([
       supabase.from('specialist_patient_assignments').select('patient_id').eq('specialist_id', specialistId),
@@ -81,14 +81,11 @@ const _cachedSpecialistPatients = unstable_cache(
     }));
 
     return { patients, specialistId };
-  },
-  [CACHE_TAGS.SPECIALIST_PATIENTS],
-  { tags: [CACHE_TAGS.SPECIALIST_PATIENTS], revalidate: 120 }
-);
+}
 
 export async function getSpecialistPatients(): Promise<{ patients: SafePatient[]; specialistId: string }> {
   const supabase = await createClient();
   const { data: { user }, error: authError } = await supabase.auth.getUser();
   if (authError || !user) throw new AuthError('No active session');
-  return _cachedSpecialistPatients(user.id);
+  return loadSpecialistPatients(supabase, user.id);
 }

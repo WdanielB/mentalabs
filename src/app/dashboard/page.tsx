@@ -28,7 +28,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <div className="h-8 w-8 rounded-full border-4 border-[#136dec] border-t-transparent animate-spin" />
+      <div className="h-8 w-8 rounded-full border-4 border-brand border-t-transparent animate-spin" />
     </div>
   );
 }

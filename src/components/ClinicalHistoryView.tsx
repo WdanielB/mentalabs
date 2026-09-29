@@ -3,6 +3,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { format, differenceInYears, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
+import { gameById } from "./games/registry";
+import type { GameMetrics } from "./games/GameFrame";
+import { ageLabel } from "../lib/format";
 import {
   AlertCircle,
   Calendar,
@@ -67,7 +70,11 @@ const CONDITION_COLORS: Record<string, string> = {
   DI: "bg-orange-100 text-orange-700",
 };
 
-function summarizeMetrics(metrics: Record<string, unknown>): string {
+function summarizeMetrics(gameType: string, metrics: Record<string, unknown>): string {
+  // Juegos clínicos: resumen interpretado del registro (misma lógica que la ficha).
+  const clinical = gameById(gameType);
+  if (clinical) return clinical.summarize(metrics as GameMetrics).headline;
+
   const preferredKeys = [
     "accuracy",
     "score",
@@ -87,7 +94,7 @@ function summarizeMetrics(metrics: Record<string, unknown>): string {
     if (chunks.length === 2) break;
   }
 
-  if (chunks.length === 0) return "Sin metricas resumidas";
+  if (chunks.length === 0) return "Sin métricas resumidas";
   return chunks.join(" - ");
 }
 
@@ -131,7 +138,7 @@ export default function ClinicalHistoryView({
 
   const patientAge = useMemo(() => {
     if (!patientBirthDate) return "No registrado";
-    return `${differenceInYears(new Date(), parseISO(patientBirthDate))} anos`;
+    return ageLabel(patientBirthDate) || `${differenceInYears(new Date(), parseISO(patientBirthDate))} años`;
   }, [patientBirthDate]);
 
   const insuranceLabel = attentionType ?? "Consulta particular";
@@ -283,7 +290,8 @@ export default function ClinicalHistoryView({
   };
 
   const attentionTypeLabel = (item: AppointmentTimeline, index: number) => {
-    if (item.diagnostic_codes.length > 0) return "Evaluacion Psicometrica";
+    if (item.attention_type) return item.attention_type;
+    if (item.diagnostic_codes.length > 0) return "Evaluación psicométrica";
     if (index === timeline.length - 1) return "Consulta Inicial";
     return ATTENTION_LABELS[item.status] ?? "Seguimiento";
   };
@@ -291,17 +299,17 @@ export default function ClinicalHistoryView({
   if (loading || !record) {
     return (
       <div className="grid grid-cols-1 lg:grid-cols-[24%_52%_24%] h-[calc(100vh-4rem)] bg-slate-50">
-        <div className="border-r border-slate-200 bg-white p-4 space-y-3">
+        <div className="border-r border-slate-200 bg-surface p-4 space-y-3">
           <div className="h-5 w-40 rounded bg-slate-200 animate-pulse" />
           <div className="h-16 rounded bg-slate-100 animate-pulse" />
           <div className="h-16 rounded bg-slate-100 animate-pulse" />
         </div>
-        <div className="p-6 space-y-4 bg-white">
+        <div className="p-6 space-y-4 bg-surface">
           <div className="h-16 rounded bg-slate-100 animate-pulse" />
           <div className="h-40 rounded bg-slate-100 animate-pulse" />
           <div className="h-40 rounded bg-slate-100 animate-pulse" />
         </div>
-        <div className="border-l border-slate-200 bg-white p-4 space-y-3">
+        <div className="border-l border-slate-200 bg-surface p-4 space-y-3">
           <div className="h-5 w-32 rounded bg-slate-200 animate-pulse" />
           <div className="h-24 rounded bg-slate-100 animate-pulse" />
           <div className="h-24 rounded bg-slate-100 animate-pulse" />
@@ -312,8 +320,8 @@ export default function ClinicalHistoryView({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[24%_52%_24%] h-[calc(100vh-4rem)] bg-slate-50 text-slate-900">
-      <aside className="border-r border-slate-200 bg-white overflow-y-auto">
-        <div className="px-4 py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
+      <aside className="border-r border-slate-200 bg-surface overflow-y-auto">
+        <div className="px-4 py-4 border-b border-slate-100 sticky top-0 bg-surface z-10">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Linea de Tiempo</h3>
         </div>
 
@@ -331,7 +339,7 @@ export default function ClinicalHistoryView({
                 onClick={() => setSelectedAppointmentId(item.id)}
                 className={`w-full text-left rounded-xl border p-3 transition-colors ${
                   selected
-                    ? "bg-blue-50 border-[#136dec]/40"
+                    ? "bg-blue-50 border-brand/40"
                     : "bg-slate-50 border-slate-200 hover:bg-slate-100"
                 }`}
               >
@@ -361,15 +369,15 @@ export default function ClinicalHistoryView({
         </div>
       </aside>
 
-      <main className="bg-white border-r border-slate-200 overflow-y-auto">
-        <header className="sticky top-0 z-10 border-b border-slate-100 bg-white px-6 py-4">
+      <main className="bg-surface border-r border-slate-200 overflow-y-auto">
+        <header className="sticky top-0 z-10 border-b border-slate-100 bg-surface px-6 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <h2 className="text-xl font-black">{patientName}</h2>
               <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500">
                 <span>Edad: {patientAge}</span>
                 <span>DNI: {dniLabel}</span>
-                <span>Tipo de Atencion: {insuranceLabel}</span>
+                <span>Tipo de atención: {insuranceLabel}</span>
               </div>
             </div>
             <div className="text-right">
@@ -395,7 +403,7 @@ export default function ClinicalHistoryView({
               disabled={disableInputs}
               value={record.consultation_reason}
               onChange={(e) => updateRecord({ consultation_reason: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-surface disabled:bg-slate-50 disabled:text-slate-500"
               placeholder="Registrar motivo principal de atencion"
             />
           </section>
@@ -407,7 +415,7 @@ export default function ClinicalHistoryView({
               disabled={disableInputs}
               value={record.clinical_evolution}
               onChange={(e) => updateRecord({ clinical_evolution: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-surface disabled:bg-slate-50 disabled:text-slate-500"
               placeholder="Registro narrativo clinico de la sesion"
             />
           </section>
@@ -418,7 +426,7 @@ export default function ClinicalHistoryView({
               {!disableInputs && (
                 <button
                   onClick={() => setShowDiagPicker((v) => !v)}
-                  className="text-xs font-semibold text-[#136dec] hover:underline"
+                  className="text-xs font-semibold text-brand hover:underline"
                 >
                   {showDiagPicker ? "Ocultar categorias" : "Autocompletar por categoria"}
                 </button>
@@ -435,7 +443,7 @@ export default function ClinicalHistoryView({
                       className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
                         diagConditionFilter === cond
                           ? CONDITION_COLORS[cond]
-                          : "bg-white border border-slate-200 text-slate-600"
+                          : "bg-surface border border-slate-200 text-slate-600"
                       }`}
                     >
                       {cond}
@@ -450,7 +458,7 @@ export default function ClinicalHistoryView({
                       className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
                         diagAgeFilter === ageGroup
                           ? "bg-slate-700 text-white"
-                          : "bg-white border border-slate-200 text-slate-600"
+                          : "bg-surface border border-slate-200 text-slate-600"
                       }`}
                     >
                       {ageGroup}
@@ -464,7 +472,7 @@ export default function ClinicalHistoryView({
                       onClick={() => {
                         if (cat.cie_code) addDiagCode(cat.cie_code);
                       }}
-                      className="w-full rounded-lg border border-slate-200 bg-white hover:bg-blue-50 hover:border-[#136dec] px-3 py-2 text-left flex items-center justify-between"
+                      className="w-full rounded-lg border border-slate-200 bg-surface hover:bg-blue-50 hover:border-brand px-3 py-2 text-left flex items-center justify-between"
                     >
                       <span className="text-sm font-medium">{cat.type_label}</span>
                       <span className="text-xs text-slate-500">{cat.cie_code ?? "-"}</span>
@@ -523,7 +531,7 @@ export default function ClinicalHistoryView({
               disabled={disableInputs}
               value={record.treatment_plan}
               onChange={(e) => updateRecord({ treatment_plan: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-surface disabled:bg-slate-50 disabled:text-slate-500"
               placeholder="Proximos pasos, acuerdos terapeuticos y recomendaciones"
             />
           </section>
@@ -534,7 +542,7 @@ export default function ClinicalHistoryView({
               {!disableInputs && (
                 <button
                   onClick={() => setShowCodePicker((v) => !v)}
-                  className="text-xs font-semibold text-[#136dec] hover:underline"
+                  className="text-xs font-semibold text-brand hover:underline"
                 >
                   {showCodePicker ? "Ocultar catalogo" : "Seleccionar del catalogo"}
                 </button>
@@ -579,7 +587,7 @@ export default function ClinicalHistoryView({
                               <span className="font-mono text-xs text-slate-500 mr-2">{code.code}</span>
                               {code.name}
                             </span>
-                            {selected && <CheckCircle2 className="h-4 w-4 text-[#136dec]" />}
+                            {selected && <CheckCircle2 className="h-4 w-4 text-brand" />}
                           </button>
                         );
                       })}
@@ -597,7 +605,7 @@ export default function ClinicalHistoryView({
               disabled={disableInputs}
               value={record.observations}
               onChange={(e) => updateRecord({ observations: e.target.value })}
-              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-white disabled:bg-slate-50 disabled:text-slate-500"
+              className="w-full rounded-xl border border-slate-200 p-3 text-sm bg-surface disabled:bg-slate-50 disabled:text-slate-500"
             />
           </section>
 
@@ -612,7 +620,7 @@ export default function ClinicalHistoryView({
             <button
               onClick={handleSign}
               disabled={disableInputs || signing}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#136dec] text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-white text-sm font-bold hover:bg-blue-600 disabled:opacity-50"
             >
               {signing ? <Clock className="h-4 w-4" /> : <FileText className="h-4 w-4" />} Finalizar y Firmar
             </button>
@@ -620,8 +628,8 @@ export default function ClinicalHistoryView({
         </div>
       </main>
 
-      <aside className="bg-white overflow-y-auto">
-        <div className="px-4 py-4 border-b border-slate-100 sticky top-0 bg-white z-10">
+      <aside className="bg-surface overflow-y-auto">
+        <div className="px-4 py-4 border-b border-slate-100 sticky top-0 bg-surface z-10">
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">Examenes y Auxiliares</h3>
         </div>
 
@@ -640,13 +648,13 @@ export default function ClinicalHistoryView({
             {examsOpen && (
               <div className="p-2.5 space-y-2">
                 {exams.length === 0 && (
-                  <p className="text-xs text-slate-400 text-center py-4">Sin examenes completados</p>
+                  <p className="text-xs text-slate-400 text-center py-4">Sin exámenes completados</p>
                 )}
                 {exams.map((exam) => (
                   <article key={exam.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
                     <p className="text-xs font-semibold text-slate-700">{exam.exam_title}</p>
                     <div className="mt-1 flex items-center justify-between text-[11px] text-slate-500">
-                      <span>Puntaje: {exam.total_score ?? "-"}</span>
+                      <span>{exam.is_games ? "Pruebas interactivas" : `Puntaje: ${exam.total_score ?? "-"}`}</span>
                       <span>
                         {exam.completed_at
                           ? format(parseISO(exam.completed_at), "d MMM yyyy", { locale: es })
@@ -654,7 +662,7 @@ export default function ClinicalHistoryView({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1 truncate">
-                      {exam.subcategory ?? "Sin subcategoria"}
+                      {exam.subcategory ?? (exam.is_games ? "Resultados en Juegos" : "Sin subcategoría")}
                     </p>
                   </article>
                 ))}
@@ -668,7 +676,7 @@ export default function ClinicalHistoryView({
               className="w-full px-3 py-2.5 bg-slate-50 border-b border-slate-100 text-left flex items-center justify-between"
             >
               <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-slate-600">
-                <Gamepad2 className="h-3.5 w-3.5" /> Juegos / Terapia
+                <Gamepad2 className="h-3.5 w-3.5" /> Pruebas interactivas
               </span>
               {sessionsOpen ? <ChevronUp className="h-4 w-4 text-slate-500" /> : <ChevronDown className="h-4 w-4 text-slate-500" />}
             </button>
@@ -681,13 +689,13 @@ export default function ClinicalHistoryView({
                 {sessions.map((session) => (
                   <article key={session.id} className="rounded-lg border border-slate-200 bg-slate-50 p-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <p className="text-xs font-semibold text-slate-700 truncate">{session.game_type}</p>
+                      <p className="text-xs font-semibold text-slate-700 truncate">{gameById(session.game_type)?.instrument ?? session.game_type}</p>
                       <BarChart3 className="h-3.5 w-3.5 text-slate-500 shrink-0" />
                     </div>
                     <p className="text-[11px] text-slate-500 mt-1">
                       {format(parseISO(session.session_start), "d MMM yyyy HH:mm", { locale: es })}
                     </p>
-                    <p className="text-[11px] text-slate-500 mt-1">{summarizeMetrics(session.metrics)}</p>
+                    <p className="text-[11px] text-slate-500 mt-1">{summarizeMetrics(session.game_type, session.metrics)}</p>
                   </article>
                 ))}
               </div>
@@ -696,7 +704,7 @@ export default function ClinicalHistoryView({
 
           <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <p className="text-[11px] text-slate-500">
-              Al abrir una atencion previa, la ficha central se muestra en modo solo lectura para preservar la inmutabilidad medica.
+              Al abrir una atención previa, la ficha central se muestra en modo solo lectura para preservar la inmutabilidad medica.
             </p>
             {isLocked && (
               <p className="mt-2 text-[11px] font-semibold text-emerald-700 inline-flex items-center gap-1">

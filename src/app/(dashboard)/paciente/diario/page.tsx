@@ -83,7 +83,7 @@ export default function PacienteDiarioPage() {
  {!showForm && (
  <button
  onClick={() => setShowForm(true)}
- className="flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
+ className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 transition-colors"
  >
  <Plus className="h-4 w-4" /> Nueva entrada
  </button>
@@ -91,7 +91,7 @@ export default function PacienteDiarioPage() {
  </div>
 
  {showForm && (
- <div className="bg-white rounded-xl border border-slate-200 p-5 mb-6">
+ <div className="bg-surface rounded-xl border border-slate-200 p-5 mb-6">
  <p className="font-semibold text-sm text-slate-700 mb-3">
  ¿Cómo te sientes hoy?
  </p>
@@ -118,7 +118,7 @@ export default function PacienteDiarioPage() {
  value={content}
  onChange={(e) => setContent(e.target.value)}
  placeholder="Escribe cómo te sientes, qué piensas, lo que quieras expresar..."
- className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent text-slate-900 "
+ className="w-full rounded-lg border border-slate-200 bg-slate-50 p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-slate-900 "
  rows={5}
  />
  <div className="flex justify-end gap-2 mt-3">
@@ -131,7 +131,7 @@ export default function PacienteDiarioPage() {
  <button
  onClick={handleSave}
  disabled={!content.trim() || saving}
- className="flex items-center gap-2 px-4 py-2 bg-[#136dec] text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
+ className="flex items-center gap-2 px-4 py-2 bg-brand text-white rounded-lg text-sm font-semibold hover:bg-blue-600 disabled:opacity-50 transition-colors"
  >
  <Send className="h-3.5 w-3.5" />
  {saving ? "Guardando..." : "Guardar"}
@@ -145,14 +145,14 @@ export default function PacienteDiarioPage() {
  {Array.from({ length: 3 }).map((_, i) => (
  <div
  key={i}
- className="h-28 rounded-xl bg-white border border-slate-200 animate-pulse"
+ className="h-28 rounded-xl bg-surface border border-slate-200 animate-pulse"
  />
  ))}
  </div>
  )}
 
  {!loading && entries.length === 0 && (
- <div className="text-center py-16 bg-white rounded-xl border border-slate-200 ">
+ <div className="text-center py-16 bg-surface rounded-xl border border-slate-200 ">
  <BookOpen className="h-10 w-10 mx-auto mb-3 text-slate-300 " />
  <p className="font-semibold text-slate-700 ">Tu diario está vacío</p>
  <p className="text-slate-400 text-sm mt-1">Escribe tu primera entrada para comenzar.</p>
@@ -166,7 +166,7 @@ export default function PacienteDiarioPage() {
  return (
  <div
  key={entry.id}
- className="bg-white rounded-xl border border-slate-200 p-5"
+ className="bg-surface rounded-xl border border-slate-200 p-5"
  >
  <div className="flex items-center justify-between mb-3">
  <div className="flex items-center gap-2 flex-wrap">

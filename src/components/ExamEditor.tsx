@@ -117,6 +117,31 @@ const GAME_TEMPLATES: Record<string, { label: string; game_type: string; config:
  config: { game_type: "cognitive_sorting", rule_switches: 3, items_per_rule: 10, capture: ["accuracy_pct","switch_cost_ms","errors"] },
  metrics: "accuracy_pct, switch_cost_ms, errors",
  },
+ // Juegos clínicos portados de DTEP (src/components/games).
+ stroop: {
+ label: "Stroop · Control inhibitorio",
+ game_type: "stroop",
+ config: { game_type: "stroop", phase_seconds: 45 },
+ metrics: "P, C, PC, interferencia, errores_PC, tr_PC_ms",
+ },
+ d2r: {
+ label: "D2-R · Atención selectiva",
+ game_type: "d2r",
+ config: { game_type: "d2r", lines: 6, items_per_line: 24, line_seconds: 20 },
+ metrics: "TR, TA, O, C, TOT, CON, VAR",
+ },
+ caras_r: {
+ label: "CARAS-R · Impulsividad",
+ game_type: "caras_r",
+ config: { game_type: "caras_r", time_seconds: 180 },
+ metrics: "A, E, A_menos_E, ICI",
+ },
+ tower_london: {
+ label: "Torre de Londres · Planificación",
+ game_type: "tower_london",
+ config: { game_type: "tower_london", levels: 8, level_seconds: 90 },
+ metrics: "resueltos_en_minimo, movimientos_extra, planificacion_media_ms",
+ },
 };
 
 /* ── Helpers ─────────────────────────────────────────────────── */
@@ -300,8 +325,8 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  };
 
  /* ── Render helpers ───────────────────────────────────────── */
- if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-[#136dec] border-t-transparent rounded-full" /></div>;
- if (notFound) return <div className="flex flex-col items-center justify-center min-h-screen gap-4"><p className="text-slate-500 font-bold">Examen no encontrado</p><Link href={backHref} className="text-[#136dec] font-semibold hover:underline">← Volver</Link></div>;
+ if (loading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin h-8 w-8 border-4 border-brand border-t-transparent rounded-full" /></div>;
+ if (notFound) return <div className="flex flex-col items-center justify-center min-h-screen gap-4"><p className="text-slate-500 font-bold">Examen no encontrado</p><Link href={backHref} className="text-brand font-semibold hover:underline">← Volver</Link></div>;
 
  const qTypeCfg = (type: QType) => Q_TYPES.find(t => t.id === type) ?? Q_TYPES[0];
 
@@ -309,7 +334,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
 
  {/* ── Header ── */}
- <header className="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
+ <header className="sticky top-0 z-30 bg-surface border-b border-slate-200 px-4 lg:px-8 py-3 flex items-center gap-3 flex-wrap">
  <Link href={backHref} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-900 transition-colors shrink-0">
  <ArrowLeft className="h-5 w-5" />
  </Link>
@@ -327,7 +352,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  </div>
  <div className="flex items-center gap-2 shrink-0">
  <button onClick={handlePublish} disabled={publishing}
- className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all ${exam.is_published ? "border-[#0bda5e] text-[#0bda5e] bg-green-50 " : "border-slate-300 text-slate-500 hover:border-slate-400"}`}>
+ className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-all ${exam.is_published ? "border-accent text-accent bg-green-50 " : "border-slate-300 text-slate-500 hover:border-slate-400"}`}>
  {publishing ? <Loader2 className="h-4 w-4 animate-spin" /> : exam.is_published ? <><Globe className="h-4 w-4" /> Publicado</> : <><Lock className="h-4 w-4" /> Borrador</>}
  </button>
  {saveError && (
@@ -336,7 +361,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  </span>
  )}
  <button onClick={handleSave} disabled={saving}
- className="flex items-center gap-2 px-4 py-1.5 bg-[#136dec] hover:bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md shadow-[#136dec]/20 transition-all disabled:opacity-70">
+ className="flex items-center gap-2 px-4 py-1.5 bg-brand hover:bg-blue-600 text-white rounded-lg text-sm font-bold shadow-md shadow-brand/20 transition-all disabled:opacity-70">
  {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : flash ? <><CheckCircle2 className="h-4 w-4" /> Guardado</> : <><Save className="h-4 w-4" /> Guardar</>}
  </button>
  </div>
@@ -345,7 +370,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <div className="max-w-3xl mx-auto px-4 lg:px-8 py-8 space-y-6">
 
  {/* Descripción */}
- <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+ <div className="bg-surface rounded-2xl border border-slate-200 shadow-sm p-5">
  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Descripción / Instrucciones del examen</label>
  <textarea rows={2} value={exam.description}
  onChange={e => setExam(p => ({ ...p, description: e.target.value }))}
@@ -362,10 +387,10 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  </h2>
  {/* Add question dropdown */}
  <div className="relative group">
- <button className="flex items-center gap-2 px-4 py-2 bg-[#136dec] hover:bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-[#136dec]/20 transition-all hover:scale-105 active:scale-95">
+ <button className="flex items-center gap-2 px-4 py-2 bg-brand hover:bg-blue-600 text-white rounded-xl text-sm font-bold shadow-md shadow-brand/20 transition-all hover:scale-105 active:scale-95">
  <Plus className="h-4 w-4" /> Añadir Pregunta
  </button>
- <div className="absolute right-0 top-full mt-2 w-52 bg-white rounded-xl border border-slate-200 shadow-xl py-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto z-20 transition-all">
+ <div className="absolute right-0 top-full mt-2 w-52 bg-surface rounded-xl border border-slate-200 shadow-xl py-1 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto z-20 transition-all">
  {Q_TYPES.map(t => {
  const Icon = t.icon;
  return (
@@ -386,7 +411,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  </div>
 
  {questions.length === 0 && (
- <div className="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-slate-200 ">
+ <div className="text-center py-16 bg-surface rounded-2xl border-2 border-dashed border-slate-200 ">
  <Brain className="h-12 w-12 mx-auto mb-4 text-slate-300 " />
  <p className="font-bold text-slate-500 text-lg">Sin preguntas todavía</p>
  <p className="text-slate-400 text-sm mt-1 mb-6">Selecciona un tipo de pregunta para comenzar.</p>
@@ -410,13 +435,13 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  const cfg = qTypeCfg(q.opts.type);
  const Icon = cfg.icon;
  return (
- <div key={qi} className={`bg-white rounded-2xl border-2 shadow-sm transition-all ${isOpen ? "border-[#136dec]/40 shadow-md" : "border-slate-200 "}`}>
+ <div key={qi} className={`bg-surface rounded-2xl border-2 shadow-sm transition-all ${isOpen ? "border-brand/40 shadow-md" : "border-slate-200 "}`}>
  {/* Card header */}
  <div className="flex items-center gap-3 p-4">
  <GripVertical className="h-4 w-4 text-slate-300 shrink-0" />
  <button onClick={() => setExpanded(prev => { const n = new Set(prev); n.has(qi) ? n.delete(qi) : n.add(qi); return n; })}
  className="flex items-center gap-3 flex-1 min-w-0 text-left">
- <div className={`h-7 w-7 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${isOpen ? "bg-[#136dec] text-white" : "bg-slate-100 text-slate-500"}`}>{qi + 1}</div>
+ <div className={`h-7 w-7 rounded-full flex items-center justify-center text-sm font-black shrink-0 ${isOpen ? "bg-brand text-white" : "bg-slate-100 text-slate-500"}`}>{qi + 1}</div>
  <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold shrink-0 ${cfg.color}`}><Icon className="h-3 w-3" />{cfg.label}</span>
  <span className={`text-sm flex-1 min-w-0 truncate ${q.content ? "font-medium" : "text-slate-400 italic"}`}>{q.content || "Escribe aquí la pregunta…"}</span>
  </button>
@@ -440,7 +465,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  const active = q.opts.type === t.id;
  return (
  <button key={t.id} onClick={() => changeType(qi, t.id)}
- className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${active ? "border-[#136dec] bg-blue-50 text-[#136dec]" : "border-slate-200 text-slate-500 hover:border-slate-300 "}`}>
+ className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border-2 transition-all ${active ? "border-brand bg-blue-50 text-brand" : "border-slate-200 text-slate-500 hover:border-slate-300 "}`}>
  <TIcon className="h-3.5 w-3.5" /> {t.label}
  </button>
  );
@@ -453,7 +478,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Texto de la pregunta</label>
  <textarea rows={2} value={q.content} onChange={e => setContent(qi, e.target.value)}
  placeholder="Ej. ¿Con qué frecuencia ha tenido poco interés o placer en hacer las cosas?"
- className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all placeholder:text-slate-400" />
+ className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm resize-none outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all placeholder:text-slate-400" />
  </div>
 
  {/* Hint */}
@@ -461,7 +486,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Instrucción / Pista (opcional)</label>
  <input type="text" value={q.hint} onChange={e => setHint(qi, e.target.value)}
  placeholder="Ej. Considera los últimos 14 días"
- className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all placeholder:text-slate-400" />
+ className="w-full h-9 px-3 bg-slate-50 border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all placeholder:text-slate-400" />
  </div>
 
  {/* Type-specific editor */}
@@ -472,11 +497,11 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  {q.opts.type === "likert" && (
  <div className="relative">
  <button onClick={() => setTemplate(p => ({ ...p, [qi]: !p[qi] }))}
- className="flex items-center gap-1.5 text-xs font-semibold text-[#136dec] hover:text-blue-700 transition-colors">
+ className="flex items-center gap-1.5 text-xs font-semibold text-brand hover:text-blue-700 transition-colors">
  <TemplateIcon className="h-3.5 w-3.5" /> Plantillas
  </button>
  {template[qi] && (
- <div className="absolute right-0 top-6 z-20 w-52 bg-white rounded-xl border border-slate-200 shadow-xl py-1">
+ <div className="absolute right-0 top-6 z-20 w-52 bg-surface rounded-xl border border-slate-200 shadow-xl py-1">
  {Object.entries(LIKERT_TEMPLATES).map(([key, tpl]) => (
  <button key={key} onClick={() => applyTemplate(qi, key)}
  className="w-full text-left px-4 py-2 text-sm hover:bg-slate-50 transition-colors">
@@ -495,11 +520,11 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <GripVertical className="h-4 w-4 text-slate-300 shrink-0" />
  <input type="text" value={opt.text} onChange={e => setChoice(qi, oi, "text", e.target.value)}
  placeholder={`Opción ${oi + 1}`}
- className="flex-1 h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="flex-1 h-9 px-3 bg-surface border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  <div className="flex items-center gap-1 shrink-0">
  <span className="text-xs text-slate-400 font-medium">Score</span>
  <input type="number" value={opt.score} onChange={e => setChoice(qi, oi, "score", e.target.value)}
- className="w-14 h-9 px-2 text-center bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-[#136dec] focus:border-transparent transition-all" />
+ className="w-14 h-9 px-2 text-center bg-surface border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-brand focus:border-transparent transition-all" />
  </div>
  <button onClick={() => removeChoice(qi, oi)} className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
  <X className="h-4 w-4" />
@@ -507,7 +532,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  </div>
  ))}
  </div>
- <button onClick={() => addChoice(qi)} className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-[#136dec] hover:text-blue-700 transition-colors">
+ <button onClick={() => addChoice(qi)} className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-brand hover:text-blue-700 transition-colors">
  <Plus className="h-3.5 w-3.5" /> Añadir opción
  </button>
  </div>
@@ -528,7 +553,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  if (prev.type !== "yesno") return prev;
  return { ...prev, [`${side}_label`]: e.target.value };
  })}
- className="w-full h-8 px-2 mt-1 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-8 px-2 mt-1 bg-surface border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  <div>
  <label className="text-xs text-slate-500 font-medium">Score</label>
@@ -537,7 +562,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  if (prev.type !== "yesno") return prev;
  return { ...prev, [`${side}_score`]: Number(e.target.value) };
  })}
- className="w-full h-8 px-2 mt-1 text-center bg-white border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-8 px-2 mt-1 text-center bg-surface border border-slate-200 rounded-lg text-sm font-bold outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  </div>
  </div>
@@ -561,7 +586,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  if (prev.type !== "vas") return prev;
  return { ...prev, [`${side}_label`]: e.target.value };
  })}
- className="w-full h-9 px-3 mt-1 bg-white border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-[#136dec] transition-all" />
+ className="w-full h-9 px-3 mt-1 bg-surface border border-slate-200 rounded-lg text-sm outline-none focus:ring-2 focus:ring-brand transition-all" />
  </div>
  );
  })}
@@ -570,7 +595,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <p className="text-xs text-slate-400 font-medium mb-2">Vista previa del paciente:</p>
  <div className="flex items-center gap-3">
  <span className="text-xs text-slate-500">{(q.opts as VASOpts).min_label || "0"}</span>
- <div className="flex-1 h-2 bg-gradient-to-r from-[#0bda5e] via-yellow-400 to-red-500 rounded-full" />
+ <div className="flex-1 h-2 bg-gradient-to-r from-accent via-yellow-400 to-red-500 rounded-full" />
  <span className="text-xs text-slate-500">{(q.opts as VASOpts).max_label || "10"}</span>
  </div>
  </div>
@@ -580,7 +605,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  {q.opts.type === "free_text" && (
  <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 ">
  <p className="text-xs text-slate-400 font-medium mb-2">Vista previa del paciente:</p>
- <div className="h-20 bg-white rounded-lg border border-slate-200 flex items-center justify-center">
+ <div className="h-20 bg-surface rounded-lg border border-slate-200 flex items-center justify-center">
  <span className="text-slate-400 text-sm italic">El paciente verá un campo de texto libre aquí</span>
  </div>
  <p className="text-xs text-slate-400 mt-2">⚠️ Las respuestas de texto libre no generan puntaje automático.</p>
@@ -614,7 +639,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <textarea rows={10} value={(q.opts as GameOpts).config_json}
  onChange={e => setOpts(qi, prev => ({ ...prev, config_json: e.target.value } as GameOpts))}
  spellCheck={false}
- className="w-full px-4 py-3 bg-[#0f172a] text-green-400 font-mono text-xs rounded-xl border border-slate-700 resize-y outline-none focus:ring-2 focus:ring-pink-500 transition-all" />
+ className="w-full px-4 py-3 bg-ink text-green-400 font-mono text-xs rounded-xl border border-slate-700 resize-y outline-none focus:ring-2 focus:ring-pink-500 transition-all" />
  <p className="text-xs text-slate-400 mt-1">
  Define la configuración del juego en JSON. Usa el campo <code className="bg-slate-100 px-1 rounded">capture</code> para indicar qué métricas registrar en <code className="bg-slate-100 px-1 rounded">interactive_sessions</code>.
  </p>
@@ -626,7 +651,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  <input type="text" value={(q.opts as GameOpts).capture_metrics}
  onChange={e => setOpts(qi, prev => ({ ...prev, capture_metrics: e.target.value } as GameOpts))}
  placeholder="accuracy_pct, reaction_time_ms, errors"
- className="w-full h-9 px-3 bg-white border border-slate-200 rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all" />
+ className="w-full h-9 px-3 bg-surface border border-slate-200 rounded-lg text-sm font-mono outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent transition-all" />
  <p className="text-xs text-slate-400 mt-1">Se almacenarán en <code className="bg-slate-100 px-1 rounded">interactive_sessions.metrics</code> como JSON.</p>
  </div>
 
@@ -651,7 +676,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
 
  {questions.length > 0 && (
  <button onClick={() => addQuestion("likert")}
- className="mt-4 w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-sm font-semibold text-slate-400 hover:border-[#136dec] hover:text-[#136dec] transition-colors flex items-center justify-center gap-2">
+ className="mt-4 w-full py-3 border-2 border-dashed border-slate-200 rounded-2xl text-sm font-semibold text-slate-400 hover:border-brand hover:text-brand transition-colors flex items-center justify-center gap-2">
  <Plus className="h-4 w-4" /> Añadir otra pregunta
  </button>
  )}
@@ -660,7 +685,7 @@ export default function ExamEditor({ examId, backHref }: { examId: string; backH
  {questions.length > 0 && (
  <div className="flex justify-end">
  <button onClick={handleSave} disabled={saving}
- className="flex items-center gap-2 px-6 py-3 bg-[#136dec] hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-[#136dec]/20 transition-all disabled:opacity-70">
+ className="flex items-center gap-2 px-6 py-3 bg-brand hover:bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-brand/20 transition-all disabled:opacity-70">
  {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
  {saving ? "Guardando..." : flash ? "¡Guardado!" : "Guardar Examen"}
  </button>
@@ -700,7 +725,7 @@ function GamePreview({ opts }: { opts: GameOpts }) {
  <div className="flex items-center justify-between mb-2 text-slate-400">
  <span>📊 Datos capturados (interactive_sessions.metrics)</span>
  <button onClick={() => { setMetrics(null); setKey(k => k + 1); }}
- className="text-[#136dec] font-sans font-semibold hover:underline">
+ className="text-brand font-sans font-semibold hover:underline">
  Reiniciar
  </button>
  </div>

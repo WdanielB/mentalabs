@@ -60,7 +60,7 @@ export default function EspecialistaSesionPage() {
  return (
  <div className="flex h-screen items-center justify-center bg-slate-50 ">
  <div className="flex items-center gap-3 text-slate-500">
- <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#136dec] border-t-transparent" />
+ <div className="h-5 w-5 animate-spin rounded-full border-2 border-brand border-t-transparent" />
  Cargando sesión...
  </div>
  </div>
@@ -72,7 +72,7 @@ export default function EspecialistaSesionPage() {
  return (
  <div className="flex flex-col h-screen">
  {/* Breadcrumb bar */}
- <div className="shrink-0 px-6 py-3 border-b border-slate-200 bg-white flex items-center gap-3">
+ <div className="shrink-0 px-6 py-3 border-b border-slate-200 bg-surface flex items-center gap-3">
  <button
  onClick={() => router.back()}
  className="flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-900 transition-colors"

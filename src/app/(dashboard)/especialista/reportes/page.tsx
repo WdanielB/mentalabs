@@ -113,7 +113,7 @@ export default function EspecialistaReportesPage() {
  <button
  onClick={exportPDF}
  disabled={loading || filtered.length === 0}
- className="flex items-center gap-2 px-4 py-2.5 bg-[#136dec] hover:bg-blue-600 text-white rounded-xl font-semibold text-sm shadow-md shadow-[#136dec]/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+ className="flex items-center gap-2 px-4 py-2.5 bg-brand hover:bg-blue-600 text-white rounded-xl font-semibold text-sm shadow-md shadow-brand/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
  >
  <Download className="h-4 w-4" /> Exportar PDF
  </button>
@@ -128,15 +128,15 @@ export default function EspecialistaReportesPage() {
  value={search}
  onChange={(e) => setSearch(e.target.value)}
  placeholder="Buscar por paciente, examen o resultado..."
- className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-white text-sm focus:ring-2 focus:ring-[#136dec] focus:border-transparent outline-none transition-all"
+ className="w-full h-10 pl-10 pr-4 rounded-xl border border-slate-200 bg-surface text-sm focus:ring-2 focus:ring-brand focus:border-transparent outline-none transition-all"
  />
  </div>
- <button className="flex items-center gap-2 h-10 px-4 rounded-xl border border-slate-200 bg-white font-medium text-sm hover:bg-slate-50 transition-colors">
+ <button className="flex items-center gap-2 h-10 px-4 rounded-xl border border-slate-200 bg-surface font-medium text-sm hover:bg-slate-50 transition-colors">
  <Filter className="h-4 w-4" /> Filtros
  </button>
  </div>
 
- <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+ <div className="bg-surface rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
  {/* Table header */}
  <div className="hidden md:grid grid-cols-5 gap-4 px-6 py-3 border-b border-slate-100 bg-slate-50/50 ">
  {["Paciente", "Examen", "Score", "Resultado", "Fecha"].map((h) => (
@@ -162,13 +162,13 @@ export default function EspecialistaReportesPage() {
  {filtered.map((r) => (
  <div key={r.id} className="grid grid-cols-1 md:grid-cols-5 gap-2 md:gap-4 px-6 py-4 border-b border-slate-100 hover:bg-slate-50 transition-colors items-center">
  <div className="flex items-center gap-2">
- <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-[#0bda5e] to-[#136dec] flex items-center justify-center text-white font-bold text-xs shrink-0">
+ <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-accent to-brand flex items-center justify-center text-white font-bold text-xs shrink-0">
  {r.patient_name.charAt(0).toUpperCase()}
  </div>
  <span className="text-sm font-semibold truncate">{r.patient_name}</span>
  </div>
  <span className="text-sm text-slate-600 truncate">{r.exam_title}</span>
- <span className="text-sm font-bold text-[#136dec]">{r.total_score ?? "—"}</span>
+ <span className="text-sm font-bold text-brand">{r.total_score ?? "—"}</span>
  <span className="text-sm text-slate-600 ">{r.subcategory}</span>
  <span className="text-xs text-slate-400">
  {format(new Date(r.completed_at), "d MMM yyyy", { locale: es })}

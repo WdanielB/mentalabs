@@ -16,6 +16,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { createClient } from "../../../../../../utils/supabase/client";
+import { ageLabel, displayScore, parseExamMeta } from "../../../../../lib/format";
+import { GameResultsPanel } from "../../../../../components/games/GameResultsPanel";
 
 type ClinicalRecordRow = {
   id: string;
@@ -28,19 +30,21 @@ type ClinicalRecordRow = {
   observations: string | null;
   signed_at: string | null;
   created_at: string;
-  appointments: {
-    id: string;
-    start_time: string;
-    status: string;
-  }[] | null;
+  appointments: RecordAppointment | RecordAppointment[] | null;
 };
+
+type RecordAppointment = { id: string; start_time: string; status: string; attention_type?: string | null };
+
+// PostgREST devuelve un objeto (no una lista) en relaciones muchos-a-uno.
+const recordAppointment = (rec: ClinicalRecordRow) =>
+  Array.isArray(rec.appointments) ? rec.appointments[0] : rec.appointments;
 
 type CompletedExamRow = {
   id: string;
   total_score: number | null;
   completed_at: string | null;
   assigned_at: string;
-  exams: { title: string }[] | null;
+  exams: { title: string; description?: string | null }[] | { title: string; description?: string | null } | null;
   diagnostics: Array<{ generated_subcategory: string | null }> | null;
 };
 
@@ -49,6 +53,8 @@ type PatientHeader = {
   status: string;
   full_name: string;
   email: string;
+  birth_date: string | null;
+  guardians: { full_name: string; phone: string | null; email: string | null }[];
 };
 
 const RECORD_STATUS: Record<string, { label: string; className: string }> = {
@@ -122,13 +128,13 @@ export default function EspecialistaPacienteHistoriaPage() {
       const [patientRes, recordsRes, examsRes] = await Promise.all([
         supabase
           .from("patients")
-          .select("id, status, profiles!inner(full_name, email)")
+          .select("id, status, profiles!inner(full_name, email, birth_date)")
           .eq("id", patientId)
           .single(),
         supabase
           .from("clinical_records")
           .select(
-            "id, status, consultation_reason, clinical_evolution, diagnostic_codes, treatment_plan, intervention_codes, observations, signed_at, created_at, appointments!inner(id, start_time, status)"
+            "id, status, consultation_reason, clinical_evolution, diagnostic_codes, treatment_plan, intervention_codes, observations, signed_at, created_at, appointments!inner(id, start_time, status, attention_type)"
           )
           .eq("patient_id", patientId)
           .eq("specialist_id", user.id)
@@ -136,12 +142,15 @@ export default function EspecialistaPacienteHistoriaPage() {
         supabase
           .from("exam_attempts")
           .select(
-            "id, total_score, completed_at, assigned_at, exams!inner(title), diagnostics(generated_subcategory)"
+            "id, total_score, completed_at, assigned_at, exams!inner(title, description), diagnostics(generated_subcategory)"
           )
           .eq("patient_id", patientId)
           .eq("status", "completed")
           .order("completed_at", { ascending: false }),
       ]);
+
+      // Menor con cuenta administrada: quién es su tutor y cómo contactarlo.
+      const { data: guardians } = await supabase.rpc("patient_guardians", { p_patient: patientId });
 
       if (patientRes.data) {
         setPatient({
@@ -149,6 +158,8 @@ export default function EspecialistaPacienteHistoriaPage() {
           status: patientRes.data.status ?? "active",
           full_name: (patientRes.data as any).profiles?.full_name ?? "Paciente",
           email: (patientRes.data as any).profiles?.email ?? "",
+          birth_date: (patientRes.data as any).profiles?.birth_date ?? null,
+          guardians: (guardians as PatientHeader["guardians"]) ?? [],
         });
       }
 
@@ -190,11 +201,19 @@ export default function EspecialistaPacienteHistoriaPage() {
           </button>
           <h1 className="text-2xl font-black mt-2">Historia Clínica SS / EsSalud</h1>
           <p className="text-sm text-slate-500 mt-1">
-            {patient?.full_name} · {patient?.email}
+            {patient?.full_name}
+            {patient?.birth_date && ` · ${ageLabel(patient.birth_date)}`}
+            {patient?.email && ` · ${patient.email}`}
           </p>
+          {patient && patient.guardians.length > 0 && (
+            <p className="mt-2 inline-flex flex-wrap items-center gap-x-2 rounded-lg bg-aji/40 px-3 py-1.5 text-xs text-ink">
+              <span className="font-semibold">Cuenta administrada por su tutor/a:</span>
+              {patient.guardians.map((g) => [g.full_name, g.phone, g.email].filter(Boolean).join(" · ")).join(" / ")}
+            </p>
+          )}
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="px-3 py-2 rounded-lg bg-blue-50 text-[#136dec] font-bold text-center">
+          <div className="px-3 py-2 rounded-lg bg-blue-50 text-brand font-bold text-center">
             {records.length} registros
           </div>
           <div className="px-3 py-2 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-center">
@@ -203,8 +222,10 @@ export default function EspecialistaPacienteHistoriaPage() {
         </div>
       </div>
 
+      <GameResultsPanel patientId={patientId} />
+
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        <section className="xl:col-span-2 bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <section className="xl:col-span-2 bg-surface border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
             <Stethoscope className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
@@ -221,6 +242,7 @@ export default function EspecialistaPacienteHistoriaPage() {
 
             {records.map((rec) => {
               const st = RECORD_STATUS[rec.status] ?? RECORD_STATUS.draft;
+              const appt = recordAppointment(rec);
               const diagCodes = Array.isArray(rec.diagnostic_codes) ? rec.diagnostic_codes : [];
               const interventionCodes = Array.isArray(rec.intervention_codes)
                 ? rec.intervention_codes
@@ -231,19 +253,18 @@ export default function EspecialistaPacienteHistoriaPage() {
                   <div className="flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
                       <Calendar className="h-4 w-4 text-slate-400" />
-                      {rec.appointments?.[0]?.start_time
-                        ? format(parseISO(rec.appointments[0].start_time), "d 'de' MMMM yyyy, HH:mm", {
-                            locale: es,
-                          })
+                      {appt?.start_time
+                        ? format(parseISO(appt.start_time), "d 'de' MMMM yyyy, HH:mm", { locale: es })
                         : "Sesión sin fecha"}
+                      {appt?.attention_type && <span className="font-normal text-slate-500">· {appt.attention_type}</span>}
                     </div>
                     <div className="flex items-center gap-2">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${st.className}`}>
                         {st.label}
                       </span>
-                      {rec.appointments?.[0]?.id && (
+                      {appt?.id && (
                         <Link
-                          href={`/especialista/pacientes/${patientId}/sesion/${rec.appointments[0].id}`}
+                          href={`/especialista/pacientes/${patientId}/sesion/${appt.id}`}
                           className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-xs font-bold hover:bg-slate-200 transition-colors"
                         >
                           <FileText className="h-3.5 w-3.5" /> Abrir ficha
@@ -269,7 +290,7 @@ export default function EspecialistaPacienteHistoriaPage() {
                     </div>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-white border border-slate-200">
+                  <div className="p-3 rounded-xl bg-surface border border-slate-200">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                       Evolución Clínica
                     </p>
@@ -279,7 +300,7 @@ export default function EspecialistaPacienteHistoriaPage() {
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                    <div className="p-3 rounded-xl bg-surface border border-slate-200">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                         Plan de Tratamiento
                       </p>
@@ -287,7 +308,7 @@ export default function EspecialistaPacienteHistoriaPage() {
                         {rec.treatment_plan || "—"}
                       </p>
                     </div>
-                    <div className="p-3 rounded-xl bg-white border border-slate-200">
+                    <div className="p-3 rounded-xl bg-surface border border-slate-200">
                       <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
                         Códigos de Intervención
                       </p>
@@ -311,7 +332,7 @@ export default function EspecialistaPacienteHistoriaPage() {
           </div>
         </section>
 
-        <aside className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
+        <aside className="bg-surface border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2">
             <ClipboardList className="h-4 w-4 text-slate-500" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500">
@@ -326,7 +347,7 @@ export default function EspecialistaPacienteHistoriaPage() {
 
             {completedExams.map((exam) => (
               <div key={exam.id} className="p-3 rounded-xl border border-slate-200 bg-slate-50 space-y-2">
-                <p className="text-sm font-semibold text-slate-800">{exam.exams?.[0]?.title ?? "Examen"}</p>
+                <p className="text-sm font-semibold text-slate-800">{(Array.isArray(exam.exams) ? exam.exams[0] : exam.exams)?.title ?? "Examen"}</p>
                 <div className="flex items-center justify-between text-xs">
                   <span className="inline-flex items-center gap-1 text-emerald-700 font-bold">
                     <CheckCircle2 className="h-3.5 w-3.5" /> Completado
@@ -339,12 +360,19 @@ export default function EspecialistaPacienteHistoriaPage() {
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500">Score total</span>
-                  <span className="font-bold text-[#136dec]">{exam.total_score ?? "—"}</span>
+                  <span className="font-bold text-brand">
+                    {parseExamMeta((Array.isArray(exam.exams) ? exam.exams[0] : exam.exams)?.description).kind === "games"
+                      ? "Pruebas interactivas ↓"
+                      : displayScore(exam.total_score, parseExamMeta((Array.isArray(exam.exams) ? exam.exams[0] : exam.exams)?.description)) ?? "—"}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-slate-500">Subcategoría</span>
                   <span className="font-medium text-slate-700 truncate ml-2">
-                    {exam.diagnostics?.[0]?.generated_subcategory ?? "Sin clasificación"}
+                    {exam.diagnostics?.[0]?.generated_subcategory ??
+                      (parseExamMeta((Array.isArray(exam.exams) ? exam.exams[0] : exam.exams)?.description).kind === "games"
+                        ? "Ver pruebas interactivas"
+                        : "Sin clasificación")}
                   </span>
                 </div>
               </div>
@@ -359,11 +387,6 @@ export default function EspecialistaPacienteHistoriaPage() {
         </aside>
       </div>
 
-      {specialistId && (
-        <div className="text-xs text-slate-400 flex items-center gap-1">
-          <Clock className="h-3.5 w-3.5" /> Especialista activo: {specialistId}
-        </div>
-      )}
     </div>
   );
 }
