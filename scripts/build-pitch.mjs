@@ -43,13 +43,13 @@ async function embeddedFonts(cssUrl) {
   const cached = `${FONT_CACHE}.${createHash("sha1").update(cssUrl).digest("hex").slice(0, 10)}`;
   try {
     const ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
-    const css = await (await fetch(cssUrl, { headers: { "User-Agent": ua } })).text();
+    const css = await (await fetch(cssUrl, { headers: { "User-Agent": ua }, signal: AbortSignal.timeout(15000) })).text();
     const blocks = css.split(/(?=\/\* )/).filter((b) => b.startsWith("/* latin */"));
     let out = "";
     for (const block of blocks) {
       const url = block.match(/url\((https:[^)]+\.woff2)\)/)?.[1];
       if (!url) continue;
-      const woff2 = Buffer.from(await (await fetch(url)).arrayBuffer()).toString("base64");
+      const woff2 = Buffer.from(await (await fetch(url, { signal: AbortSignal.timeout(15000) })).arrayBuffer()).toString("base64");
       out += block.replace(url, `data:font/woff2;base64,${woff2}`) + "\n";
     }
     if (!out) throw new Error("sin bloques latin");

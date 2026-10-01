@@ -18,7 +18,7 @@
 
   const fit = () => {
     const s = Math.min(innerWidth / 1600, innerHeight / 900) * 0.96;
-    deck.style.transform = `scale(${s})`;
+    deck.style.transform = `translate(-50%, -50%) scale(${s})`;
   };
 
   // Contadores animados (respeta "reducir movimiento").

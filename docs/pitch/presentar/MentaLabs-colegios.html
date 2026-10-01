@@ -115,8 +115,9 @@
 html, body { height: 100%; background: oklch(0.2 0.03 288); color: var(--ink); font-family: var(--body); overflow: hidden; }
 
 /* ── Escenario 1600×900 escalado ──────────────────────────── */
-.stage { position: fixed; inset: 0; display: grid; place-items: center; }
-.deck { position: relative; width: 1600px; height: 900px; transform-origin: center; }
+.stage { position: fixed; inset: 0; overflow: hidden; }
+/* Centrado absoluto: deck.js aplica translate(-50%, -50%) scale(s), así queda al centro en cualquier resolución. */
+.deck { position: absolute; left: 50%; top: 50%; width: 1600px; height: 900px; transform: translate(-50%, -50%); transform-origin: center; }
 .slide {
   position: absolute; inset: 0; padding: 88px 104px; background: var(--canvas);
   display: flex; flex-direction: column; opacity: 0; visibility: hidden;
@@ -211,7 +212,7 @@ aside.speaker { display: none; }
   @page { size: 1600px 900px; margin: 0; }
   html, body { overflow: visible; background: none; height: auto; }
   .stage { position: static; display: block; }
-  .deck { transform: none !important; width: auto; height: auto; }
+  .deck { position: static; transform: none !important; width: auto; height: auto; }
   .slide { position: relative; opacity: 1; visibility: visible; width: 1600px; height: 900px; page-break-after: always; border-radius: 0; }
   [data-a] { opacity: 1 !important; transform: none !important; animation: none !important; }
   .grow { transform: none !important; } .draw { stroke-dashoffset: 0 !important; }
@@ -517,7 +518,7 @@ aside.speaker { display: none; }
 
   const fit = () => {
     const s = Math.min(innerWidth / 1600, innerHeight / 900) * 0.96;
-    deck.style.transform = `scale(${s})`;
+    deck.style.transform = `translate(-50%, -50%) scale(${s})`;
   };
 
   // Contadores animados (respeta "reducir movimiento").
