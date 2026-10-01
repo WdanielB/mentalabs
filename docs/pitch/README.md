@@ -4,7 +4,7 @@ Tres versiones del pitch, con la estructura que recomienda UTEC Ventures para ca
 
 | Archivo | Para quién | Duración | Estructura | Siguiente paso |
 |---|---|---|---|---|
-| `inversion.html` | Inversionistas y jurado (Demo Day) | 5:10 · 15 diapositivas + sub-diapositivas de estudio | Historia · Problema · Usuario · Solución · Producto · Competencia · Mercado · Modelo · Validación · Plan · Equipo · Lo que buscamos · Cierre | Demo de 15 min e inversión de S/ 35 000 (ángeles o fondos como StartUp Perú) |
+| `inversion.html` | Inversionistas y jurado (Demo Day) | 5:20 · 15 diapositivas + sub-diapositivas de estudio | Historia · Problema · Usuario · Solución · Producto · Competencia · Mercado · Modelo · Validación · Plan · Equipo · Lo que buscamos · Cierre | Demo de 15 min e inversión de S/ 35 000 (ángeles o fondos como StartUp Perú) |
 | `colegios.html` | Dirección y equipo psicopedagógico (B2B) | 4 min | Problema · Usuario · Solución · Alternativas · Validación · Equipo · Visión | Agendar la charla con padres (piloto sin costo) |
 | `familias.html` | Madres, padres y tutores (B2C) | 3 min | Problema (empatizar) · Historia · ¿Cómo lo resuelven hoy? · Solución · Validación · Confianza | Crear la cuenta y registrar a su hijo |
 

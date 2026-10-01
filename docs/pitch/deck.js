@@ -165,6 +165,22 @@
     x0 = null;
   });
 
+  // Producto: posición de primer plano de cada dispositivo del trío (laptop de
+  // 780 px o celular de 240 px, a la izquierda y centrado en alto). Se mide en
+  // píxeles del deck (offset*), así que no depende de la escala de la pantalla.
+  const placeTrio = () => document.querySelectorAll(".trio").forEach((trio) => {
+    trio.querySelectorAll(".dev").forEach((d) => {
+      const tw = d.classList.contains("phone") ? 240 : 780, k = tw / d.offsetWidth;
+      let x = 0, y = 0;
+      for (let n = d; n && n !== trio; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+      d.style.setProperty("--fx", `${44 + (780 - tw) / 2 - x}px`);
+      d.style.setProperty("--fy", `${(trio.offsetHeight - d.offsetHeight * k) / 2 - y}px`);
+      d.style.setProperty("--fk", k);
+    });
+  });
+  placeTrio();
+  document.fonts?.ready.then(placeTrio);
+
   addEventListener("resize", fit);
   // #7 abre la diapositiva 7; #7.2, su segunda sub-diapositiva.
   const fromHash = () => {

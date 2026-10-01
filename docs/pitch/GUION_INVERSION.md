@@ -1,6 +1,6 @@
 # Guion · Pitch de inversión (Demo Day)
 
-Guion hablado de `inversion.html`, diapositiva por diapositiva: cuánto dura, quién habla, cómo va la voz y qué decir. Duración total: **5:10**. Este archivo se genera a partir de las notas del deck (tecla `N`); si cambias una nota, cámbiala allí.
+Guion hablado de `inversion.html`, diapositiva por diapositiva: cuánto dura, quién habla, cómo va la voz y qué decir. Duración total: **5:20**. Este archivo se genera a partir de las notas del deck (tecla `N`); si cambias una nota, cámbiala allí.
 
 ## Cronograma
 
@@ -10,17 +10,17 @@ Guion hablado de `inversion.html`, diapositiva por diapositiva: cuánto dura, qu
 | 2 | La historia | Andrea | 25 s | 0:10 – 0:35 |
 | 3 | El problema | Andrea | 20 s | 0:35 – 0:55 |
 | 4 | Usuario | Andrea | 20 s | 0:55 – 1:15 |
-| 5 | Solución | Carlos | 20 s | 1:15 – 1:35 |
-| 6 | Producto | Carlos | 30 s | 1:35 – 2:05 |
-| 7 | Tiempo al diagnóstico | Carlos | 20 s | 2:05 – 2:25 |
-| 8 | Competencia | Carlos | 15 s | 2:25 – 2:40 |
-| 9 | Mercado | Carlos | 20 s | 2:40 – 3:00 |
-| 10 | Modelo de negocio | Carlos | 25 s | 3:00 – 3:25 |
-| 11 | Tracción | Andrea | 20 s | 3:25 – 3:45 |
-| 12 | Plan | Carlos | 20 s | 3:45 – 4:05 |
-| 13 | Equipo | los dos | 15 s | 4:05 – 4:20 |
-| 14 | Lo que buscamos | Carlos | 25 s | 4:20 – 4:45 |
-| 15 | Cierre | Andrea | 25 s | 4:45 – 5:10 |
+| 5 | Solución | Carlos | 25 s | 1:15 – 1:40 |
+| 6 | Producto | Carlos | 35 s | 1:40 – 2:15 |
+| 7 | Tiempo al diagnóstico | Carlos | 20 s | 2:15 – 2:35 |
+| 8 | Competencia | Carlos | 15 s | 2:35 – 2:50 |
+| 9 | Mercado | Carlos | 20 s | 2:50 – 3:10 |
+| 10 | Modelo de negocio | Carlos | 25 s | 3:10 – 3:35 |
+| 11 | Tracción | Andrea | 20 s | 3:35 – 3:55 |
+| 12 | Plan | Carlos | 20 s | 3:55 – 4:15 |
+| 13 | Equipo | los dos | 15 s | 4:15 – 4:30 |
+| 14 | Lo que buscamos | Carlos | 25 s | 4:30 – 4:55 |
+| 15 | Cierre | Andrea | 25 s | 4:55 – 5:20 |
 
 **Si solo hay 5 minutos:** pasa Competencia (8) en una frase (“nadie resuelve el diagnóstico infantil; ese espacio es el nuestro”) y Plan (12) en otra (“en julio de 2027, punto de equilibrio”). **Si solo hay 3 minutos:** 1, 2, 3, 5, 6, 7, 10, 14 y 15.
 
@@ -47,7 +47,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 **Voz y emoción:** calma y sonrisa. De pie, quietos, sin empezar hasta que haya silencio. Volumen medio-alto, ritmo lento: es la primera impresión.
 
-**Di:** “Buenos días. Somos MentaLabs. Ayudamos a que un niño con sospecha de TDAH o autismo tenga su diagnóstico en cuatro días, y no en seis meses.”
+**Di:** “Buenos días. Nuestra propuesta se llama MentaLabs. Ayudamos a lograr un diagnóstico rápido para niños con sospecha de neurodivergencias como el TDAH o el autismo.”
 
 **Recuerda:** no leas la diapositiva; mira al jurado. La frase de portada ya dice qué hacemos: no la expliques, pasa a Mateo.
 
@@ -55,7 +55,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 **Voz y emoción:** baja el volumen y el ritmo, como quien cuenta un cuento. Lee la nota de la libreta con voz de profesora cansada. Pausa de 2 segundos después de “flojo”. Emoción: ternura e impotencia, sin dramatizar.
 
-**Di:** “Les presento a Mateo. Tiene ocho años. Esta es la tercera nota que llega a su casa en una semana. [Pausa] Todos dicen que Mateo es flojo. Su papá, Luis, maneja taxi de seis de la mañana a ocho de la noche, y cuando por fin pide una cita, se la dan para dentro de dos meses. Mateo no es un caso raro. Es la norma.”
+**Di:** “Les presento a Mateo. Tiene ocho años. Esta es la tercera nota que llega a su casa en una semana. [Pausa] Todos dicen que Mateo es flojo. A su papá le han dicho que posiblemente tenga hiperactividad, y cuando por fin pide una cita para diagnosticarlo, se la dan para dentro de dos meses. Mateo no es un caso raro. Es la norma.”
 
 **Más, si preguntan:** el colegio pide la evaluación antes de fin de bimestre; en casa las tareas duran más de 2 horas y terminan en pelea. Es un caso ilustrativo armado sobre el perfil de usuario del Entregable 1.
 
@@ -63,7 +63,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 **Voz y emoción:** sube el volumen; tono firme, de dato. Señala cada cifra al decirla y haz una pausa corta antes de “doscientos noventa y cuatro”. Emoción: seriedad, indignación contenida.
 
-**Di:** “Los números lo confirman. El año pasado el MINSA atendió casi cien mil casos de autismo y, en solo seis meses, veinticinco mil de TDAH. Para todo el sistema público hay doscientos noventa y cuatro psiquiatras. Resultado: seis meses en los que un niño no empieza terapia.”
+**Di:** “El año pasado el MINSA atendió casi cien mil casos de autismo y, en solo seis meses, veinticinco mil de TDAH. Para todo el sistema público hay doscientos noventa y cuatro psiquiatras. Resultado: seis meses en los que un niño no empieza terapia en el sistema de salud público.”
 
 **Más, si preguntan:** 8 de cada 10 casos de TDAH son niños. Las tres cifras son del propio Estado o de prensa que lo cita; la espera de 60 a 90 días viene del informe técnico de EsSalud (Entregable 1).
 
@@ -71,31 +71,31 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 **Voz y emoción:** ritmo de enumeración: una persona por respiración, señalando su tarjeta. Emoción: empatía; son personas, no “segmentos”.
 
-**Di:** “Detrás de cada caso hay tres personas esperando. Luis, que pierde medio día de trabajo por cada cita. Roberto, el psicólogo, que corrige pruebas y escribe informes de noche, sin cobrar. Y Elena, la profesora, que detecta a Mateo en marzo y recibe el informe cuando el año ya terminó.”
+**Di:** “Detrás de cada caso hay personas esperando. Luis, que pierde medio día de trabajo por cada cita. Roberto, el psicólogo, que corrige pruebas y escribe informes de noche, sin cobrar. Y Elena, la profesora, que sospecha que Mateo tiene una neurodivergencia, pero recién se enterará a fin de año.”
 
 **Más, si preguntan:** en el Perú hay unos 60 000 psicólogos colegiados pero solo 487 psicoterapeutas acreditados: el tiempo del especialista es lo más escaso. El perfil de la docente es una hipótesis por validar. Detalle completo en la sub-diapositiva (↓).
 
 *Sub-diapositivas (↓):* Usuario · perfiles completos
 
-## 5. Solución · 20 s (1:15 – 1:35) · habla Carlos
+## 5. Solución · 25 s (1:15 – 1:40) · habla Carlos
 
-**Voz y emoción:** aquí cambia el tono: del problema a la esperanza. Sube la energía, sonríe, cuenta los cuatro pasos con los dedos. Cierra despacio y con énfasis: “le devolvemos su tiempo”.
+**Voz y emoción:** aquí cambia el tono: del problema a la esperanza. Sube la energía, sonríe, cuenta los cuatro pasos con los dedos. En el paso 3 aclara que el niño no siempre juega: primero van los cuestionarios. Cierra despacio y con énfasis: “le devolvemos su tiempo”.
 
-**Di:** “MentaLabs automatiza la evaluación psicológica en cuatro pasos. La familia encuentra a un especialista colegiado. Responde los cuestionarios desde casa. El niño juega, y cada juego es una prueba clínica. Y el psicólogo firma el informe. No reemplazamos al psicólogo: le devolvemos su tiempo.”
+**Di:** “MentaLabs automatiza la evaluación psicológica en cuatro pasos. La familia encuentra a un especialista colegiado y tiene la entrevista con el psicólogo por videollamada. Desde casa, el padre, o el propio niño si tiene edad, responde los cuestionarios y baterías; y si el caso lo requiere, los juegos interactivos, donde cada juego es una prueba clínica. Y el psicólogo firma el informe. No reemplazamos al psicólogo: le devolvemos su tiempo.”
 
-**Más, si preguntan:** una sola cuenta por familia (el padre administra a sus hijos, sin crearles correos). Los juegos son Stroop, D2-R, CARAS-R y Torre de Londres. El informe incluye historia clínica firmada y diagnóstico CIE-10. Detalle en la sub-diapositiva (↓).
+**Más, si preguntan:** una sola cuenta por familia (el padre administra a sus hijos, sin crearles correos). Las baterías se asignan según la edad: el padre responde las de su hijo y, desde cierta edad, el niño responde las suyas con supervisión. Los juegos son Stroop, D2-R, CARAS-R y Torre de Londres; el psicólogo los asigna solo si el caso los requiere. El informe incluye historia clínica firmada y diagnóstico CIE-10. Detalle en la sub-diapositiva (↓).
 
 *Sub-diapositivas (↓):* Solución · los cuatro pasos
 
-## 6. Producto · 30 s (1:35 – 2:05) · habla Carlos
+## 6. Producto · 35 s (1:40 – 2:15) · habla Carlos
 
-**Voz y emoción:** ritmo ágil y orgullo: esto lo construimos nosotros. Son 4 clics (→): Luis, Mateo, Roberto y las tres juntas. Mira la pantalla solo al hacer clic; habla mirando al jurado.
+**Voz y emoción:** ritmo ágil y orgullo: esto lo construimos nosotros. Son 4 clics (→): Luis, Mateo, Roberto y las tres juntas. Mira la pantalla solo al hacer clic; habla mirando al jurado. En el clic 4 las pantallas se acomodan solas: espera a que terminen de moverse antes de decir la frase.
 
-**Di:** [clic 1] “Esto no es un mockup: es la plataforma funcionando. Esto ve Luis: los pendientes, los resultados y el informe de su hijo.” [clic 2] “Esto juega Mateo en el celular: encontrar la cara diferente. Para él es un juego; para nosotros, una prueba de impulsividad.” [clic 3] “Y esto recibe Roberto: todo corregido, listo para firmar el diagnóstico.” [clic 4] “Tres personas, un solo lugar.”
+**Di:** [clic 1] “Esto no es un mockup: es la plataforma funcionando. Esto ve Luis: los pendientes, los resultados y el informe de su hijo.” [clic 2] “Mateo, como ya tiene edad para hacerlo, responde sus cuestionarios en el celular con la supervisión de su papá. Y en el juego interactivo busca la cara diferente. Para él es un juego; para nosotros, una prueba de impulsividad.” [clic 3] “Y esto recibe Roberto, el psicólogo: todo corregido, listo para firmar el diagnóstico.” [clic 4] “Tres personas, un solo lugar.”
 
 **Más, si preguntan:** el juego del celular es el test CARAS-R. Si hay tiempo o lo piden, la demo en vivo se reinicia con `supabase/seed_demo_tdah.sql`.
 
-## 7. Tiempo al diagnóstico · 20 s (2:05 – 2:25) · habla Carlos
+## 7. Tiempo al diagnóstico · 20 s (2:15 – 2:35) · habla Carlos
 
 **Voz y emoción:** deja crecer las barras 2 segundos en silencio. Di “cuatro días” lento y haz una pausa. Emoción: alivio; es el momento “ajá” del pitch.
 
@@ -105,7 +105,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Caso Mateo · día a día · Seguimiento · el dato no muere en el informe
 
-## 8. Competencia · 15 s (2:25 – 2:40) · habla Carlos
+## 8. Competencia · 15 s (2:35 – 2:50) · habla Carlos
 
 **Voz y emoción:** seguro y rápido, sin atacar a nadie: describe, no critiques. Cierra firme, bajando el tono, en “es el nuestro”.
 
@@ -115,7 +115,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Competencia · por qué somos distintos
 
-## 9. Mercado · 20 s (2:40 – 3:00) · habla Carlos
+## 9. Mercado · 20 s (2:50 – 3:10) · habla Carlos
 
 **Voz y emoción:** tono analítico, una cifra por frase y pausa entre ellas. “Mil evaluaciones” firme y realista. Emoción: ambición con los pies en la tierra.
 
@@ -125,7 +125,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Mercado · cómo se calcula
 
-## 10. Modelo de negocio · 25 s (3:00 – 3:25) · habla Carlos
+## 10. Modelo de negocio · 25 s (3:10 – 3:35) · habla Carlos
 
 **Voz y emoción:** claridad de negocio: frases cortas, sin relleno. Señala la tarjeta amarilla al decir “familias”. Di el total despacio. Emoción: seguridad, sin exagerar.
 
@@ -135,7 +135,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Modelo de negocio · el cálculo
 
-## 11. Tracción · 20 s (3:25 – 3:45) · habla Andrea
+## 11. Tracción · 20 s (3:35 – 3:55) · habla Andrea
 
 **Voz y emoción:** honestidad sin disculparse. Mira a los ojos, tono tranquilo. La última frase, con una media sonrisa: es lo que el jurado recordará de ustedes como equipo.
 
@@ -145,7 +145,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Tracción · lista completa
 
-## 12. Plan · 20 s (3:45 – 4:05) · habla Carlos
+## 12. Plan · 20 s (3:55 – 4:15) · habla Carlos
 
 **Voz y emoción:** ritmo de marcha: tres hitos, tres golpes de voz, avanzando la mano sobre la línea de tiempo. Emoción: determinación.
 
@@ -155,7 +155,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Plan · detalle por etapa
 
-## 13. Equipo · 15 s (4:05 – 4:20) · habla los dos
+## 13. Equipo · 15 s (4:15 – 4:30) · habla los dos
 
 **Voz y emoción:** cada uno se presenta en primera persona, con una sonrisa y sin leer. Cercanía y orgullo. Carlos primero, Andrea después; Andrea cierra con la última frase.
 
@@ -163,7 +163,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 **Más, si preguntan:** Carlos también construyó DTEP, la herramienta con la que digitalizamos las pruebas. Nos falta, y lo buscamos, un psicólogo clínico infantil colegiado que avale la metodología y los baremos. Si pueden, agreguen una frase personal: por qué les importa este problema.
 
-## 14. Lo que buscamos · 25 s (4:20 – 4:45) · habla Carlos
+## 14. Lo que buscamos · 25 s (4:30 – 4:55) · habla Carlos
 
 **Voz y emoción:** la voz más firme de todo el pitch. Di el monto sin bajar el volumen ni la mirada, y calla 2 segundos después. No pidas perdón por pedir. Emoción: convicción.
 
@@ -173,7 +173,7 @@ El reparto de quién habla es una sugerencia: Andrea lleva la historia y a las p
 
 *Sub-diapositivas (↓):* Lo que buscamos · detalle
 
-## 15. Cierre · 25 s (4:45 – 5:10) · habla Andrea
+## 15. Cierre · 25 s (4:55 – 5:20) · habla Andrea
 
 **Voz y emoción:** vuelve al tono íntimo de la diapositiva 2: baja el volumen y el ritmo. Pausa antes de la visión y dila de memoria, mirando al jurado, no a la pantalla. Emoción: esperanza y orgullo. Termina con “Gracias” y quédense quietos 2 segundos.
 

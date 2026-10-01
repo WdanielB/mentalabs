@@ -265,10 +265,25 @@ aside.speaker { display: none; }
 .stepper > [data-show] { position: absolute; inset: 0; opacity: 0; visibility: hidden; transform: translateY(24px) scale(.97); transition: opacity .45s var(--ease), transform .7s var(--ease), visibility 0s .45s; }
 .slide[data-step="1"] [data-show~="1"], .slide[data-step="2"] [data-show~="2"],
 .slide[data-step="3"] [data-show~="3"], .slide[data-step="4"] [data-show~="4"] { opacity: 1; visibility: visible; transform: none; transition: opacity .5s var(--ease) .2s, transform .7s var(--ease) .2s; }
-.solo { display: grid; grid-template-columns: auto 1fr; gap: 80px; align-items: center; padding-left: 44px; }
-.solo .who .avatar { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; font: 700 26px var(--display); }
-.solo .who h3 { font-size: 50px; line-height: 1.05; margin-top: 12px; letter-spacing: -0.03em; }
-.solo .who .kicker { margin-top: 22px; }
+
+/* Producto: los mismos tres dispositivos pasan del primer plano a su lugar en
+   el trío, sin desaparecer. deck.js calcula --fx/--fy/--fk (primer plano). */
+.trio { position: absolute; inset: 0; display: grid; grid-template-columns: 1.25fr .6fr 1.25fr; gap: 44px; align-items: end; padding-top: 20px; }
+.trio .dev { transform-origin: 0 0; transition: transform 1.1s var(--ease), opacity .5s var(--ease); }
+.slide:not([data-step="4"]) .trio .dev { transform: translate(var(--fx, 0), var(--fy, 0)) scale(var(--fk, 1)); opacity: 0; }
+.slide[data-step="1"] [data-dev="1"] .dev, .slide[data-step="2"] [data-dev="2"] .dev,
+.slide[data-step="3"] [data-dev="3"] .dev { opacity: 1; z-index: 2; }
+.trio figcaption { margin-top: 22px; font-size: 24px; opacity: 0; transform: translateY(12px); transition: opacity .3s var(--ease), transform .3s var(--ease); }
+.slide[data-step="4"] .trio figcaption { opacity: 1; transform: none; transition-delay: .7s; transition-duration: .5s; }
+/* Al salir, el texto se va rápido para no quedar encima de los dispositivos en movimiento. */
+.stepper > .who { transition: opacity .2s, transform .2s, visibility 0s .2s; }
+.slide[data-step="1"] .stepper > .who[data-show="1"], .slide[data-step="2"] .stepper > .who[data-show="2"],
+.slide[data-step="3"] .stepper > .who[data-show="3"] { transition: opacity .5s var(--ease) .25s, transform .7s var(--ease) .25s; }
+.stepper > .who { left: 904px; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
+.stepper > .who .avatar { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; font: 700 26px var(--display); }
+.stepper > .who h3 { font-size: 50px; line-height: 1.05; margin-top: 12px; letter-spacing: -0.03em; }
+.stepper > .who .kicker { margin-top: 22px; }
+@media (prefers-reduced-motion: reduce) { .trio .dev { transition: opacity .3s; } }
 
 /* ── Libreta de notas (agenda escolar) ───────────────────────── */
 .notebook {
@@ -582,6 +597,22 @@ aside.speaker { display: none; }
     if (Math.abs(dx) > 50) dx < 0 ? next() : prev();
     x0 = null;
   });
+
+  // Producto: posición de primer plano de cada dispositivo del trío (laptop de
+  // 780 px o celular de 240 px, a la izquierda y centrado en alto). Se mide en
+  // píxeles del deck (offset*), así que no depende de la escala de la pantalla.
+  const placeTrio = () => document.querySelectorAll(".trio").forEach((trio) => {
+    trio.querySelectorAll(".dev").forEach((d) => {
+      const tw = d.classList.contains("phone") ? 240 : 780, k = tw / d.offsetWidth;
+      let x = 0, y = 0;
+      for (let n = d; n && n !== trio; n = n.offsetParent) { x += n.offsetLeft; y += n.offsetTop; }
+      d.style.setProperty("--fx", `${44 + (780 - tw) / 2 - x}px`);
+      d.style.setProperty("--fy", `${(trio.offsetHeight - d.offsetHeight * k) / 2 - y}px`);
+      d.style.setProperty("--fk", k);
+    });
+  });
+  placeTrio();
+  document.fonts?.ready.then(placeTrio);
 
   addEventListener("resize", fit);
   // #7 abre la diapositiva 7; #7.2, su segunda sub-diapositiva.
