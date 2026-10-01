@@ -128,7 +128,7 @@ export default function TutorHomePage() {
                 {todo.map((a) => (
                   <li key={a.id} className="flex flex-wrap items-center gap-4 rounded-2xl bg-surface px-5 py-4 ring-1 ring-brand/40">
                     <ClipboardCheck className="h-5 w-5 text-brand" aria-hidden="true" />
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 basis-[220px]">
                       <p className="font-medium">{a.title}</p>
                       <p className="text-sm text-muted">
                         {a.meta.kind === "games" ? `Para que juegue ${name} (unos 15 min)` : `Lo respondes tú sobre ${name}`} · asignado el {formatDateLima(a.assigned_at)}
