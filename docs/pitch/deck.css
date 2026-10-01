@@ -99,12 +99,17 @@ p.lead { font-size: 28px; line-height: 1.45; color: var(--muted); max-width: 940
 .hud button:hover { background: oklch(0.38 0.06 290); }
 .hud button:focus-visible { outline: 2px solid var(--aji); outline-offset: 2px; }
 .notes {
-  position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; z-index: 6;
+  position: fixed; left: 0; right: 0; bottom: 0; max-height: 44vh; overflow: auto; z-index: 6;
   background: oklch(0.16 0.03 288 / .96); color: oklch(0.93 0.01 290); padding: 18px 26px 22px;
   font-size: 16px; line-height: 1.6; transform: translateY(100%); transition: transform .35s var(--ease);
 }
 .notes.open { transform: none; }
 .notes b { color: var(--aji); font-weight: 600; }
+.notes p { margin-top: 6px; max-width: 1400px; }
+.notes-head { display: flex; gap: 18px; align-items: baseline; flex-wrap: wrap; }
+.notes-head span { color: oklch(0.75 0.02 290); font-size: 14px; }
+.notes-head .clock { margin-left: auto; font: 700 20px var(--display); font-variant-numeric: tabular-nums; color: oklch(0.93 0.01 290); }
+.notes-head .clock.late { color: oklch(0.72 0.19 27); }
 .help { position: fixed; left: 22px; bottom: 18px; font: 13px var(--body); color: oklch(0.7 0.03 290); z-index: 5; }
 aside.speaker { display: none; }
 
@@ -118,6 +123,9 @@ aside.speaker { display: none; }
   [data-a] { opacity: 1 !important; transform: none !important; animation: none !important; }
   .grow { transform: none !important; } .draw { stroke-dashoffset: 0 !important; }
   .bar, .hud, .notes, .help { display: none !important; }
+  /* Las sub-diapositivas solo se imprimen en modo estudio (?estudio). */
+  .slide.sub { display: none; }
+  .study .slide.sub { display: flex; }
 }
 
 /* ── Maquetas de dispositivo (capturas reales de la app) ───────── */
@@ -153,3 +161,41 @@ aside.speaker { display: none; }
 .audience { position: absolute; top: 34px; right: 104px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; opacity: .55; }
 .ask-q { display: flex; align-items: center; gap: 22px; font-size: 26px; padding: 22px 0; border-bottom: 1px solid color-mix(in oklch, currentColor 18%, transparent); }
 .ask-q .n { flex: none; width: 54px; height: 54px; border-radius: 50%; display: grid; place-items: center; font: 700 22px var(--display); background: var(--aji); color: var(--ink); }
+
+/* ── Sub-diapositivas: detalle para estudiar (↓ abre, ↑ cierra) ─ */
+.slide.sub { background: var(--band); box-shadow: inset 0 8px 0 var(--aji); }
+.slide.sub::after { content: "Sub-diapositiva · para estudiar"; position: absolute; top: 36px; right: 104px; font-size: 14px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.slide.sub h2 { font-size: 54px; }
+
+/* ── Pasos dentro de una diapositiva (data-steps / data-show) ─── */
+.stepper { position: relative; flex: 1; margin-top: 36px; }
+.stepper > [data-show] { position: absolute; inset: 0; opacity: 0; visibility: hidden; transform: translateY(24px) scale(.97); transition: opacity .45s var(--ease), transform .7s var(--ease), visibility 0s .45s; }
+.slide[data-step="1"] [data-show~="1"], .slide[data-step="2"] [data-show~="2"],
+.slide[data-step="3"] [data-show~="3"], .slide[data-step="4"] [data-show~="4"] { opacity: 1; visibility: visible; transform: none; transition: opacity .5s var(--ease) .2s, transform .7s var(--ease) .2s; }
+.solo { display: grid; grid-template-columns: auto 1fr; gap: 80px; align-items: center; padding-left: 44px; }
+.solo .who .avatar { width: 72px; height: 72px; border-radius: 22px; display: grid; place-items: center; font: 700 26px var(--display); }
+.solo .who h3 { font-size: 50px; line-height: 1.05; margin-top: 12px; letter-spacing: -0.03em; }
+.solo .who .kicker { margin-top: 22px; }
+
+/* ── Libreta de notas (agenda escolar) ───────────────────────── */
+.notebook {
+  position: relative; transform: rotate(1.8deg); border-radius: 6px 16px 16px 6px; padding: 66px 44px 28px 100px;
+  background-color: #fffdf2;
+  background-image:
+    linear-gradient(90deg, transparent 76px, oklch(0.68 0.17 25 / .6) 76px, oklch(0.68 0.17 25 / .6) 78px, transparent 78px),
+    repeating-linear-gradient(transparent 0 45px, oklch(0.72 0.07 250 / .5) 45px 47px);
+  box-shadow: 0 34px 60px -32px oklch(0.2 0.05 290 / .6), 0 0 0 1px oklch(0.88 0.02 85);
+  font: 600 38px/47px "Caveat", "Segoe Print", cursive; color: oklch(0.34 0.1 265);
+}
+.notebook::before { content: ""; position: absolute; left: 24px; top: 14px; bottom: 14px; width: 26px; background: radial-gradient(circle, oklch(0.9 0.012 85) 0 9px, oklch(0.8 0.02 85) 9px 10px, transparent 11px) center top / 26px 47px no-repeat space; }
+.notebook .stamp { font: 500 15px/47px var(--body); letter-spacing: .12em; text-transform: uppercase; color: oklch(0.55 0.02 265); display: flex; justify-content: space-between; transform: translateY(-9px); }
+.notebook .sign { text-align: right; color: oklch(0.5 0.19 27); }
+
+/* ── Mercado: filas de cifras ────────────────────────────────── */
+.mrow { display: grid; grid-template-columns: 300px 1fr; column-gap: 28px; align-items: center; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.mrow:last-child { border-bottom: 0; }
+.mrow .num { font-size: 62px; line-height: 1; }
+.mrow .kicker { font-size: 15px; }
+.mrow .what { font-size: 21px; line-height: 1.35; margin-top: 6px; }
+.legend { display: flex; align-items: center; gap: 10px; font-size: 19px; }
+.legend i { flex: none; width: 16px; height: 16px; border-radius: 5px; }
