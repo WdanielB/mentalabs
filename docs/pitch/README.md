@@ -8,11 +8,42 @@ Tres versiones del pitch, con la estructura que recomienda UTEC Ventures para ca
 | `colegios.html` | Dirección y equipo psicopedagógico (B2B) | 4 min | Problema · Usuario · Solución · Alternativas · Validación · Equipo · Visión | Agendar la charla con padres (piloto sin costo) |
 | `familias.html` | Madres, padres y tutores (B2C) | 3 min | Problema (empatizar) · Historia · ¿Cómo lo resuelven hoy? · Solución · Validación · Confianza | Crear la cuenta y registrar a su hijo |
 
-- **Presentar:** abre el HTML en Chrome o Edge. ← → para avanzar · `N` notas del presentador (guion con tiempos y las 5 preguntas en la primera diapositiva) · `F` pantalla completa · `P` imprimir o PDF.
+- **Presentar:** ver la sección *Demo Day* más abajo. Para editar, abre el HTML en Chrome o Edge: ← → para avanzar · `N` notas del presentador (guion con tiempos y las 5 preguntas en la primera diapositiva) · `F` o `F5` pantalla completa · `P` imprimir o PDF.
 - **Guion de la versión inversionistas:** `GUION_INVERSION.md` (tiempos, quién habla, voz y emoción, qué decir, preguntas del jurado y fuentes). Es el mismo texto de las notas del deck.
 - **Sub-diapositivas (solo `inversion.html`):** `↓` abre el detalle de estudio de la diapositiva actual, `↑` o `Esc` lo cierra; no forman parte del recorrido. `T` inicia el cronómetro de ensayo. En Producto, `→` muestra cada pantalla por separado y luego las tres. `inversion.html?estudio` imprime también las sub-diapositivas (`MentaLabs-pitch-inversionistas-estudio.pdf`).
 - **PDF listos para enviar:** `MentaLabs-pitch-inversionistas.pdf`, `MentaLabs-pitch-colegios.pdf`, `MentaLabs-pitch-familias.pdf`.
-- **Archivos compartidos:** `deck.css` (estilo, maquetas de dispositivo, perfiles) y `deck.js` (navegación). Las capturas se cargan desde `../storytelling/capturas/`; copia la carpeta `docs/` completa.
+- **Archivos compartidos:** `deck.css` (estilo, maquetas de dispositivo, perfiles) y `deck.js` (navegación). Las capturas se cargan desde `../storytelling/capturas/`. Estos archivos son para editar; para presentar usa los de `presentar/`.
+
+## Demo Day: presentar desde otra PC
+
+La carpeta `presentar/` tiene **un solo archivo por versión**, con estilos, código, fuentes, logos y capturas incrustados:
+
+| Archivo | Versión |
+|---|---|
+| `presentar/MentaLabs-inversionistas.html` | Inversionistas y jurado |
+| `presentar/MentaLabs-colegios.html` | Colegios |
+| `presentar/MentaLabs-familias.html` | Familias |
+
+1. Copia el archivo a un USB, al escritorio o a tu correo. No necesita otros archivos ni internet.
+2. Ábrelo con doble clic en **Chrome o Edge** (Firefox también funciona).
+3. Pulsa `F5` o `F` para pantalla completa. El cursor se esconde solo después de 2,5 s sin moverlo.
+
+**Pasador de diapositivas** (Logitech R400/R500, Spotlight o genéricos):
+
+| Botón del pasador | Tecla que envía | Qué hace |
+|---|---|---|
+| Siguiente | AvPág / → | Avanza (o el siguiente paso de la diapositiva) |
+| Anterior | RePág / ← | Retrocede |
+| Presentar | F5 / Mayús+F5 | Entra o sale de pantalla completa (no recarga) |
+| Pantalla negra | `.` o `B` | Pone la pantalla en negro; cualquier botón la vuelve a mostrar |
+
+Con teclado también funcionan `↓`/`↑` (sub-diapositivas), `Inicio`/`Fin`, `N` (notas) y `T` (cronómetro).
+
+**Si editas un deck,** vuelve a generar los archivos desde la raíz del repo (la primera vez necesita internet para descargar las fuentes):
+
+```
+node scripts/build-pitch.mjs
+```
 
 ## Elevator pitch (plantilla de la guía)
 

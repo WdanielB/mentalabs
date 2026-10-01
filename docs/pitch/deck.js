@@ -108,8 +108,34 @@
     notesBtn.setAttribute("aria-pressed", open);
   };
 
+  // ── Compatibilidad con pasadores de diapositivas ──
+  // Los pasadores (Logitech R400/R500 y genéricos) envían AvPág/RePág para
+  // avanzar, F5/Mayús+F5 y Esc con el botón de "presentar", y "." o "B" con el
+  // de pantalla negra. F5 no debe recargar la página.
+  const toggleFullscreen = () =>
+    document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+  const blackout = Object.assign(document.createElement("div"), { id: "blackout" });
+  blackout.style.cssText = "position:fixed;inset:0;background:#000;z-index:50;display:none;cursor:none";
+  document.body.append(blackout);
+  const isBlack = () => blackout.style.display === "block";
+  const setBlack = (on) => { blackout.style.display = on ? "block" : "none"; };
+
+  // El cursor se esconde mientras presentas y vuelve al mover el mouse.
+  let cursorTimer;
+  const wakeCursor = () => {
+    document.body.style.cursor = "";
+    clearTimeout(cursorTimer);
+    cursorTimer = setTimeout(() => { document.body.style.cursor = "none"; }, 2500);
+  };
+  addEventListener("mousemove", wakeCursor);
+  wakeCursor();
+
   addEventListener("keydown", (e) => {
     const k = e.key.toLowerCase();
+    if (e.key === "F5") { e.preventDefault(); toggleFullscreen(); return; }
+    if (k === "." || k === "b" || e.key === ">") { e.preventDefault(); setBlack(!isBlack()); return; }
+    // Con la pantalla en negro, cualquier tecla solo la vuelve a mostrar.
+    if (isBlack()) { e.preventDefault(); setBlack(false); return; }
     if (["ArrowRight", "PageDown", " ", "Enter"].includes(e.key)) { e.preventDefault(); next(); }
     else if (["ArrowLeft", "PageUp", "Backspace"].includes(e.key)) { e.preventDefault(); prev(); }
     else if (e.key === "ArrowDown" || k === "d") { e.preventDefault(); subDown(); }
@@ -118,7 +144,7 @@
     else if (e.key === "End") show(slides.length - 1, true);
     else if (k === "n") toggleNotes();
     else if (k === "t") { t0 = Date.now(); tickClock(); }
-    else if (k === "f") document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.();
+    else if (k === "f") toggleFullscreen();
     else if (k === "p") print();
   });
   document.getElementById("next").onclick = next;
