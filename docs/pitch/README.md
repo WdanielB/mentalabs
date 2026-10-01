@@ -1,25 +1,28 @@
-# Pitch deck · MentaLabs
+# Pitch · MentaLabs
 
-- **Presentar:** abre `index.html` en Chrome o Edge (doble clic). Las capturas se cargan desde `../storytelling/capturas/`, así que no muevas el archivo solo; copia la carpeta `docs/` completa.
-- **Controles:** ← → o espacio para avanzar · `N` notas del presentador (guion con tiempos) · `F` pantalla completa · `P` imprimir o guardar en PDF · también se desliza en tablet.
-- **PDF listo para enviar:** `MentaLabs-pitch.pdf` (18 páginas).
-- **Duración:** 16 diapositivas principales ≈ 5 minutos (tiempos en las notas). Las 17 y 18 son anexos para preguntas.
+Tres versiones del pitch, con la estructura que recomienda UTEC Ventures para cada público. Abre `index.html` para elegir una: ahí están la estructura, las 5 preguntas respondidas, el elevator pitch y el siguiente paso de cada versión.
 
-## Elevator pitch
+| Archivo | Para quién | Duración | Estructura | Siguiente paso |
+|---|---|---|---|---|
+| `inversion.html` | Inversionistas y jurado | 5 min (+ anexos) | Problema · Usuario · Solución · Competencia · Mercado · Validación · Equipo · Petición · Visión | Demo de 15 min e inversión de S/ 35 000 |
+| `colegios.html` | Dirección y equipo psicopedagógico (B2B) | 4 min | Problema · Usuario · Solución · Alternativas · Validación · Equipo · Visión | Agendar la charla con padres (piloto sin costo) |
+| `familias.html` | Madres, padres y tutores (B2C) | 3 min | Problema (empatizar) · Historia · ¿Cómo lo resuelven hoy? · Solución · Validación · Confianza | Crear la cuenta y registrar a su hijo |
 
-**10 segundos**
-> MentaLabs convierte las pruebas psicológicas en juegos y cuestionarios que la familia completa desde casa, para diagnosticar TEA y TDAH en días y no en meses.
+- **Presentar:** abre el HTML en Chrome o Edge. ← → para avanzar · `N` notas del presentador (guion con tiempos y las 5 preguntas en la primera diapositiva) · `F` pantalla completa · `P` imprimir o PDF.
+- **PDF listos para enviar:** `MentaLabs-pitch-inversionistas.pdf`, `MentaLabs-pitch-colegios.pdf`, `MentaLabs-pitch-familias.pdf`.
+- **Archivos compartidos:** `deck.css` (estilo, maquetas de dispositivo, perfiles) y `deck.js` (navegación). Las capturas se cargan desde `../storytelling/capturas/`; copia la carpeta `docs/` completa.
 
-**30 segundos**
-> En el Perú, un niño con sospecha de autismo o TDAH espera de 60 a 90 días entre cada cita, y necesita varias para tener un diagnóstico. MentaLabs digitaliza las pruebas estandarizadas y las convierte en cuestionarios y juegos que la familia completa desde casa, para que el psicólogo reciba todo corregido y firme el informe en días, no en meses. Empezamos con colegios de Arequipa. Queremos que ningún niño espere un año para que lo entiendan.
+## Elevator pitch (plantilla de la guía)
 
-**60 segundos** (con la historia)
-> Mateo tiene 8 años y en su agenda llegaba una nota casi a diario: no terminó la tarea, se levantó, interrumpió. Todos decían que era flojo. Su papá, taxista, conseguía cita cada dos meses. Mateo no es un caso raro: el MINSA atendió más de 25 000 casos de TDAH solo en el primer semestre de 2025, y hay 294 psiquiatras en el sistema público para todo el país.
-> MentaLabs digitaliza el camino al diagnóstico: el padre responde cuestionarios estandarizados desde casa, el niño juega pruebas como el Stroop o el CARAS-R, y el psicólogo recibe todo corregido para firmar el informe. Con Mateo fueron 3 sesiones en 4 días. Ganamos con una comisión por evaluación y por terapia, una suscripción para psicólogos y un tamizaje anual para colegios. Empezamos con la campaña escolar 2027 en Arequipa y buscamos S/ 35 000 y colegios aliados para ser sostenibles a mitad de año.
+> Para **familias con hijos con sospecha de autismo o TDAH**, que **esperan meses por un diagnóstico**, estamos construyendo **MentaLabs**: pruebas psicológicas estandarizadas convertidas en cuestionarios y juegos que se completan desde casa, que les permite **tener un informe firmado en 4 días o menos**, a diferencia de **los 6 meses del sistema público o los consultorios que corrigen en papel**.
+
+**10 segundos:** MentaLabs convierte las pruebas psicológicas en juegos y cuestionarios que la familia completa desde casa, para diagnosticar TEA y TDAH en 4 días y no en 6 meses.
 
 ## Antes de presentar, confirmar
 
-1. **Roles del equipo** (diapositiva 14): propuestos como *Producto y tecnología* y *Validación con usuarios y alianzas*.
-2. **Monto y uso de fondos** (diapositiva 15): S/ 35 000 es una propuesta; ajústalo a las bases del concurso.
-3. **Precios** (diapositiva 11): son hipótesis, y así se dice en la diapositiva.
-4. **Demo en vivo**: si la haces, reinicia el caso con `supabase/seed_demo_tdah.sql` (ver `docs/storytelling/`).
+1. **Roles del equipo:** propuestos como *Producto y tecnología* y *Validación y alianzas*.
+2. **Petición** (versión inversionistas): S/ 35 000 es una propuesta; ajústala a las bases del concurso.
+3. **Precios:** comisión del 20 %, S/ 89 al mes y S/ 8 por alumno son hipótesis a validar.
+4. **Perfiles hipotéticos:** Rocío (coordinadora psicopedagógica) y Elena (docente) no vienen de los entregables; valídalos con un colegio antes de citarlos como hallazgos.
+5. **Versión familias:** agrega el enlace o el código QR de registro en la última diapositiva.
+6. **Demo en vivo:** reinicia el caso con `supabase/seed_demo_tdah.sql` (ver `docs/storytelling/`).
